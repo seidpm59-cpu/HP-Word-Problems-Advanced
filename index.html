@@ -1,0 +1,3305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arithmancy — Word Problem Spellbook</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0b07;
+    --panel: #1c1408;
+    --panel2: #221a0a;
+    --accent: #f5c842;
+    --accent2: #c8a84b;
+    --accent3: #e05c2a;
+    --teal: #4ec9b0;
+    --text: #f0e6c8;
+    --muted: #8a7a5a;
+    --digit-bg: #2a1f0e;
+    --border: #3d2e14;
+    --glow: rgba(245,200,66,0.35);
+    --green: #50e090;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    background-image:
+      radial-gradient(ellipse at 20% 10%, rgba(80,40,10,0.5) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 90%, rgba(60,30,5,0.4) 0%, transparent 50%);
+    color: var(--text);
+    font-family: 'Crimson Text', serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 60px;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '✦ ✧ ⋆ ✦ ✧ ⋆ ✦ ✧ ⋆ ✦ ✧ ⋆';
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    font-size: 0.7rem;
+    color: rgba(245,200,66,0.12);
+    letter-spacing: 3vw;
+    line-height: 3;
+    pointer-events: none;
+    z-index: 0;
+    animation: drift 30s linear infinite;
+    white-space: nowrap; overflow: hidden;
+  }
+  @keyframes drift { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* ── HEADER ── */
+  .site-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 24px; position: relative; z-index: 1; }
+  .owl-icon { font-size: 3.5rem; animation: hover-owl 4s ease-in-out infinite; filter: drop-shadow(0 0 12px rgba(245,200,66,0.5)); margin-bottom: 8px; }
+  @keyframes hover-owl { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-8px) rotate(2deg); } }
+  h1 { font-family: 'Cinzel', serif; font-size: clamp(1.4rem, 4.5vw, 2.2rem); font-weight: 900; color: var(--accent); letter-spacing: 3px; text-align: center; text-shadow: 0 0 20px var(--glow); margin-bottom: 4px; }
+  .subtitle { font-family: 'Crimson Text', serif; font-style: italic; color: var(--muted); font-size: 1rem; text-align: center; }
+  .house-rule { width: 260px; height: 2px; background: linear-gradient(90deg, transparent, var(--accent2), transparent); margin: 10px auto 0; opacity: 0.6; }
+
+  /* ── TABS ── */
+  .tabs { display: flex; gap: 6px; margin-bottom: 24px; flex-wrap: wrap; justify-content: center; z-index: 1; position: relative; }
+  .tab-btn { background: var(--panel); border: 1px solid var(--border); color: var(--muted); font-family: 'Cinzel', serif; font-weight: 400; font-size: 0.78rem; padding: 8px 16px; border-radius: 4px; cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px; }
+  .tab-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+  .tab-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(245,200,66,0.08); box-shadow: 0 0 12px rgba(245,200,66,0.15); }
+  .tab-panel { display: none; width: 100%; max-width: 760px; position: relative; z-index: 1; }
+  .tab-panel.active { display: block; }
+
+  /* ── CARD ── */
+  .card { background: var(--panel2); border-radius: 8px; padding: 22px; margin-bottom: 18px; border: 1px solid var(--border); box-shadow: inset 0 1px 0 rgba(245,200,66,0.06), 0 4px 20px rgba(0,0,0,0.4); position: relative; }
+  .card::before { content: ''; position: absolute; inset: 0; border-radius: 8px; background: linear-gradient(135deg, rgba(245,200,66,0.03) 0%, transparent 60%); pointer-events: none; }
+  .card-title { font-family: 'Cinzel', serif; font-size: 0.82rem; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 14px; }
+
+  /* ── PROBLEM DISPLAY ── */
+  .problem-box {
+    background: rgba(245,200,66,0.04);
+    border: 1px solid rgba(245,200,66,0.2);
+    border-radius: 8px;
+    padding: 18px 20px;
+    font-size: 1.15rem;
+    line-height: 1.8;
+    color: var(--text);
+    margin-bottom: 20px;
+    font-family: 'Crimson Text', serif;
+    position: relative;
+  }
+  .problem-box .problem-label { font-family: 'Cinzel', serif; font-size: 0.72rem; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+  .problem-box .problem-text { font-size: 1.15rem; line-height: 1.75; }
+  .problem-box .key-num { color: var(--accent); font-weight: 600; background: rgba(245,200,66,0.1); padding: 1px 4px; border-radius: 3px; }
+
+  /* ── STEP SCAFFOLD ── */
+  .steps-container { display: flex; flex-direction: column; gap: 14px; }
+  .step-card { background: var(--digit-bg); border-radius: 10px; padding: 18px 20px; border: 2px solid var(--border); transition: all 0.3s; }
+  .step-card.step-locked { opacity: 0.4; pointer-events: none; }
+  .step-card.step-active { border-color: var(--accent); box-shadow: 0 0 18px rgba(245,200,66,0.12); }
+  .step-card.step-done { border-color: #2a5a2a; background: rgba(40,100,40,0.08); }
+  .step-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .step-num { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: var(--bg); font-weight: 900; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: 'Cinzel', serif; }
+  .step-done .step-num { background: var(--green); }
+  .step-locked .step-num { background: var(--muted); }
+  .step-title { font-family: 'Cinzel', serif; font-weight: 700; font-size: 1rem; color: var(--accent2); }
+  .step-done .step-title { color: var(--green); }
+  .step-subtitle { font-size: 0.88rem; color: var(--muted); font-style: italic; margin-top: 2px; }
+
+  /* ── VISUALIZER ── */
+  .viz-area {
+    background: rgba(0,0,0,0.25);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    min-height: 100px;
+    margin-bottom: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-content: flex-start;
+    align-items: flex-start;
+  }
+  .viz-group { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .viz-group-label { font-size: 0.72rem; color: var(--muted); font-family: 'Cinzel', serif; letter-spacing: 0.5px; text-align: center; }
+  .viz-icons { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; max-width: 240px; }
+  .viz-icon { font-size: 1.3rem; line-height: 1; transition: transform 0.2s; }
+  .viz-icon.new-item { animation: pop-in 0.4s cubic-bezier(0.34,1.56,0.64,1); color: var(--teal); }
+  @keyframes pop-in { from { transform: scale(0) rotate(-15deg); opacity: 0; } to { transform: scale(1) rotate(0deg); opacity: 1; } }
+  .viz-plus { font-size: 1.6rem; color: var(--accent); font-weight: 900; align-self: center; padding: 0 6px; }
+  .viz-total-line { width: 100%; border-top: 2px solid rgba(245,200,66,0.3); padding-top: 10px; display: flex; align-items: center; gap: 10px; }
+  .viz-total-icons { display: flex; flex-wrap: wrap; gap: 4px; }
+  .viz-total-label { font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--teal); }
+
+  /* ── EQUATION BUILDER ── */
+  .eq-builder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 12px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 8px;
+    margin-bottom: 14px;
+  }
+  .eq-num-box {
+    background: var(--panel2);
+    border: 2px solid var(--accent);
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-family: 'Space Mono', monospace;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 64px;
+    text-align: center;
+  }
+  .eq-op { font-family: 'Space Mono', monospace; font-size: 1.8rem; color: var(--teal); font-weight: 700; }
+  .eq-unknown { border-color: var(--muted); color: var(--muted); font-size: 1.4rem; }
+  .eq-result { border-color: var(--green); color: var(--green); }
+
+  /* fill-in inputs */
+  .eq-input {
+    background: var(--panel2);
+    border: 2px solid var(--accent2);
+    border-radius: 8px;
+    padding: 10px 4px;
+    font-family: 'Space Mono', monospace;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+    width: 80px;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .eq-input:focus { border-color: var(--accent); box-shadow: 0 0 10px var(--glow); }
+  .eq-input.wrong { border-color: var(--accent3); animation: shake 0.3s; }
+  @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+  .eq-input.correct { border-color: var(--green); background: rgba(80,224,144,0.08); }
+
+  /* ── EXPLANATION ── */
+  .explanation {
+    background: rgba(245,200,66,0.05);
+    border-left: 3px solid var(--accent2);
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    font-size: 1rem;
+    line-height: 1.65;
+    color: #d4c49a;
+    margin-bottom: 12px;
+    font-family: 'Crimson Text', serif;
+  }
+  .explanation strong { color: var(--accent2); }
+
+  /* ── HINT BOX ── */
+  .hint-box {
+    background: rgba(78,201,176,0.06);
+    border: 1px solid rgba(78,201,176,0.25);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 0.95rem;
+    color: var(--teal);
+    margin-bottom: 12px;
+    display: none;
+    font-family: 'Crimson Text', serif;
+    font-style: italic;
+  }
+  .hint-box.visible { display: block; }
+
+  /* ── BUTTONS ── */
+  .step-btn {
+    background: linear-gradient(135deg, #8b6914, #c8a84b);
+    color: #1a1000;
+    border: none; border-radius: 6px; padding: 10px 24px;
+    font-family: 'Cinzel', serif; font-weight: 700; font-size: 0.88rem;
+    cursor: pointer; transition: all 0.15s; letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+  .step-btn:hover { opacity: 0.9; transform: scale(1.02); box-shadow: 0 0 14px var(--glow); }
+  .step-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+  .reset-btn { background: transparent; border: 1px solid var(--muted); color: var(--muted); border-radius: 6px; padding: 7px 16px; font-family: 'Cinzel', serif; font-size: 0.78rem; cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px; }
+  .reset-btn:hover { border-color: var(--accent3); color: var(--accent3); }
+  .hint-btn { background: transparent; border: 1px solid rgba(78,201,176,0.4); color: var(--teal); border-radius: 6px; padding: 6px 14px; font-family: 'Cinzel', serif; font-size: 0.75rem; cursor: pointer; transition: all 0.2s; }
+  .hint-btn:hover { background: rgba(78,201,176,0.1); }
+
+  /* ── OP SELECTOR ── */
+  .op-select-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 12px; }
+  .op-chip { background: var(--digit-bg); border: 2px solid var(--border); border-radius: 8px; padding: 8px 18px; font-family: 'Space Mono', monospace; font-size: 1.3rem; color: var(--muted); cursor: pointer; transition: all 0.2s; }
+  .op-chip:hover { border-color: var(--accent2); color: var(--accent2); }
+  .op-chip.selected { border-color: var(--teal); color: var(--teal); background: rgba(78,201,176,0.1); }
+
+  /* ── SUCCESS BANNER ── */
+  .success-banner { background: rgba(40,180,80,0.1); border: 2px solid rgba(40,180,80,0.3); border-radius: 12px; padding: 18px; text-align: center; margin-top: 10px; }
+  .success-banner .score { font-family: 'Space Mono', monospace; font-weight: 700; color: var(--green); font-size: 1.8rem; margin-bottom: 6px; }
+  .success-banner .msg { font-size: 1rem; color: var(--green); opacity: 0.85; font-style: italic; }
+
+  /* ── NUMBER PICKER BADGES ── */
+  .num-badge { display: inline-block; background: rgba(245,200,66,0.12); border: 1px solid rgba(245,200,66,0.3); border-radius: 4px; padding: 2px 8px; font-family: 'Space Mono', monospace; font-weight: 700; color: var(--accent); font-size: 1rem; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrap { width: 100%; max-width: 760px; margin-bottom: 18px; z-index: 1; position: relative; }
+  .progress-bar-bg { background: var(--digit-bg); border-radius: 6px; height: 8px; overflow: hidden; border: 1px solid var(--border); }
+  .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent2), var(--accent)); border-radius: 6px; transition: width 0.5s ease; }
+  .progress-label { font-family: 'Cinzel', serif; font-size: 0.72rem; color: var(--muted); letter-spacing: 1px; margin-bottom: 6px; text-align: right; }
+
+  /* ── SCORE CHIPS ── */
+  .score-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; z-index: 1; position: relative; }
+  .score-chip { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; text-align: center; }
+  .score-chip .sc-label { font-family: 'Cinzel', serif; font-size: 0.65rem; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 3px; }
+  .score-chip .sc-val { font-family: 'Space Mono', monospace; font-size: 1.2rem; font-weight: 700; color: var(--accent); }
+
+  /* ── CATEGORY SELECTOR ── */
+  .cat-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 22px; z-index: 1; position: relative; }
+  .cat-chip { background: var(--panel); border: 1px solid var(--border); color: var(--muted); font-family: 'Cinzel', serif; font-size: 0.75rem; padding: 7px 14px; border-radius: 20px; cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px; }
+  .cat-chip:hover { border-color: var(--accent2); color: var(--accent2); }
+  .cat-chip.active { border-color: var(--accent); color: var(--accent); background: rgba(245,200,66,0.08); }
+
+  /* ── HOW TO PANEL ── */
+  .howto-step { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 18px; }
+  .howto-num { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--accent2), var(--accent)); color: var(--bg); font-family: 'Cinzel', serif; font-weight: 900; font-size: 1rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .howto-text h3 { font-family: 'Cinzel', serif; color: var(--accent2); font-size: 0.95rem; margin-bottom: 4px; }
+  .howto-text p { font-size: 0.98rem; color: #d4c49a; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<div class="site-header">
+  <div class="owl-icon">🦉</div>
+  <h1>Arithmancy</h1>
+  <div class="subtitle">The Word Problem Spellbook — Hogwarts Edition</div>
+  <div class="house-rule"></div>
+</div>
+
+<!-- Score Row -->
+<div class="score-row" id="scoreRow">
+  <div class="score-chip"><div class="sc-label">Problems Solved</div><div class="sc-val" id="solvedCount">0</div></div>
+  <div class="score-chip"><div class="sc-label">House Points</div><div class="sc-val" id="pointsCount">0</div></div>
+  <div class="score-chip"><div class="sc-label">Streak 🔥</div><div class="sc-val" id="streakCount">0</div></div>
+</div>
+
+<!-- Progress -->
+<div class="progress-wrap">
+  <div class="progress-label" id="progressLabel">Problem 1 of 8</div>
+  <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+</div>
+
+<!-- Category filter -->
+<div class="cat-row" id="catRow">
+  <div class="cat-chip active" onclick="setCategory('all',this)">All Spells</div>
+  <div class="cat-chip" onclick="setCategory('addition',this)">Addition ✚</div>
+  <div class="cat-chip" onclick="setCategory('subtraction',this)">Subtraction −</div>
+  <div class="cat-chip" onclick="setCategory('multiplication',this)">Multiplication ×</div>
+  <div class="cat-chip" onclick="setCategory('division',this)">Division ÷</div>
+</div>
+
+<!-- Main tabs -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab(0)">📜 Practice</button>
+  <button class="tab-btn" onclick="switchTab(1)">🔗 Multi-Step</button>
+  <button class="tab-btn" onclick="switchTab(2)">⚔️ Advanced</button>
+  <button class="tab-btn" onclick="switchTab(3)">📖 How It Works</button>
+</div>
+
+<!-- TAB 0: Practice -->
+<div class="tab-panel active" id="tab0">
+
+  <div class="card" id="problemCard">
+    <div class="card-title">📜 The Challenge</div>
+    <div class="problem-box" id="problemBox">
+      <div class="problem-label">Word Problem</div>
+      <div class="problem-text" id="problemText">Loading your challenge…</div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <button class="step-btn" id="startBtn" onclick="startProblem()" style="font-size:0.9rem;padding:9px 20px">✨ Begin Solving</button>
+      <button class="reset-btn" id="skipBtnInitial" onclick="skipProblem()">Skip →</button>
+    </div>
+  </div>
+
+  <div class="steps-container" id="stepsContainer" style="display:none">
+
+    <!-- STEP 1: Visualize -->
+    <div class="step-card step-active" id="step1card">
+      <div class="step-header">
+        <div class="step-num" id="step1num">1</div>
+        <div>
+          <div class="step-title">🎨 See It — Visualise the Problem</div>
+          <div class="step-subtitle">Watch the quantities come to life</div>
+        </div>
+      </div>
+      <div class="explanation" id="step1explain"></div>
+      <div class="viz-area" id="vizArea"></div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button class="step-btn" id="animBtn" onclick="animateViz()">▶ Play Animation</button>
+        <button class="hint-btn" onclick="toggleHint('hint1')">💡 Hint</button>
+      </div>
+      <div class="hint-box" id="hint1"></div>
+    </div>
+
+    <!-- STEP 2: Set up the equation -->
+    <div class="step-card step-locked" id="step2card">
+      <div class="step-header">
+        <div class="step-num" id="step2num">2</div>
+        <div>
+          <div class="step-title">⚗️ Set Up the Spell — Write the Equation</div>
+          <div class="step-subtitle">Choose the right operation and fill in the numbers</div>
+        </div>
+      </div>
+      <div class="explanation" id="step2explain"></div>
+
+      <div style="margin-bottom:10px">
+        <div style="font-family:'Cinzel',serif;font-size:0.75rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Which operation do you need?</div>
+        <div class="op-select-row" id="opSelectRow"></div>
+      </div>
+
+      <div class="eq-builder" id="eqBuilder"></div>
+      <div class="hint-box" id="hint2"></div>
+      <div id="step2feedback" style="font-size:0.88rem;margin-top:6px;min-height:20px"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px">
+        <button class="step-btn" id="checkEqBtn" onclick="checkEquation()">✓ Check My Equation</button>
+        <button class="hint-btn" onclick="toggleHint('hint2')">💡 Hint</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: Solve -->
+    <div class="step-card step-locked" id="step3card">
+      <div class="step-header">
+        <div class="step-num" id="step3num">3</div>
+        <div>
+          <div class="step-title">🔮 Cast the Spell — Find the Answer</div>
+          <div class="step-subtitle">Calculate the result and check your work</div>
+        </div>
+      </div>
+      <div class="explanation" id="step3explain"></div>
+      <div class="eq-builder" id="eqSolve"></div>
+      <div class="hint-box" id="hint3"></div>
+      <div id="step3feedback" style="font-size:0.88rem;margin-top:6px;min-height:20px"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px">
+        <button class="step-btn" id="checkAnsBtn" onclick="checkAnswer()">✓ Submit Answer</button>
+        <button class="hint-btn" onclick="toggleHint('hint3')">💡 Hint</button>
+      </div>
+    </div>
+
+    <!-- Success -->
+    <div id="successArea" style="display:none"></div>
+
+  </div>
+
+  <!-- History Log -->
+  <div class="card" id="historyCard" style="margin-top:10px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+      <div class="card-title" style="margin-bottom:0">📜 Spell Book — Answered Problems</div>
+      <button class="reset-btn" style="margin-top:0" onclick="clearHistory()">✕ Clear History</button>
+    </div>
+    <div id="historyLines">
+      <div style="color:var(--muted);font-style:italic;font-size:0.9rem">No problems answered yet — complete a challenge to record your first entry!</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TAB 1: Multi-Step -->
+<div class="tab-panel" id="tab1">
+  <div class="card" id="msCard">
+    <div class="card-title">🔗 Multi-Step Challenge</div>
+    <div class="problem-box" id="msProblemBox">
+      <div class="problem-label">Word Problem</div>
+      <div class="problem-text" id="msProblemText">Loading…</div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <button class="step-btn" id="msStartBtn" onclick="msStart()" style="font-size:0.9rem;padding:9px 20px">✨ Begin Solving</button>
+      <button class="reset-btn" id="msSkipBtn" onclick="msSkip()">Skip →</button>
+    </div>
+  </div>
+  <div id="msPartsContainer" style="display:none;flex-direction:column;gap:14px"></div>
+</div>
+
+<!-- TAB 2: Advanced -->
+<div class="tab-panel" id="tab2">
+  <div class="card" id="advCard">
+    <div class="card-title">⚔️ Advanced Challenge</div>
+    <div class="problem-box" id="advProblemBox">
+      <div class="problem-label">Word Problem</div>
+      <div class="problem-text" id="advProblemText">Loading…</div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <button class="step-btn" id="advStartBtn" onclick="advStart()" style="font-size:0.9rem;padding:9px 20px">✨ Begin Solving</button>
+      <button class="reset-btn" id="advSkipBtn" onclick="advSkip()">Skip →</button>
+    </div>
+  </div>
+  <!-- Worksheet renders inside the same card for continuity -->
+  <div class="card" id="advWorksheetCard" style="display:none;padding:24px 28px">
+    <div id="advStepsContainer"></div>
+  </div>
+</div>
+
+<!-- TAB 3: How It Works -->
+<div class="tab-panel" id="tab3">
+  <div class="card">
+    <div class="card-title">📖 The Three-Step Arithmancy Method</div>
+    <div style="margin-bottom:20px">
+      <div class="howto-step">
+        <div class="howto-num">1</div>
+        <div class="howto-text">
+          <h3>🎨 See It — Visualise</h3>
+          <p>Before writing anything, picture the story in your head. We'll show you the objects from the problem as icons so you can count and compare. This is like drawing a quick sketch before solving.</p>
+        </div>
+      </div>
+      <div class="howto-step">
+        <div class="howto-num">2</div>
+        <div class="howto-text">
+          <h3>⚗️ Set Up the Spell — Build the Equation</h3>
+          <p>Now translate the story into maths. Choose the operation (+, −, ×, ÷) that matches what's happening in the problem, then fill in the numbers you've identified. This is your equation — the magical formula!</p>
+        </div>
+      </div>
+      <div class="howto-step">
+        <div class="howto-num">3</div>
+        <div class="howto-text">
+          <h3>🔮 Cast the Spell — Solve &amp; Check</h3>
+          <p>With the equation set up, do the maths and write in your answer. Always ask: "Does my answer make sense?" If you added, the answer should be bigger than both numbers. If you subtracted, it should be smaller.</p>
+        </div>
+      </div>
+    </div>
+    <div class="explanation">
+      <strong>Why these steps?</strong> Most mistakes in word problems happen because students jump straight to arithmetic without understanding the story. By visualising first, you activate your imagination and catch hidden details. By writing the equation second, you separate "what is this asking?" from "how do I calculate it?" — two very different skills!
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🔑 Key Words Cheat Sheet</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <div style="font-family:'Cinzel',serif;color:var(--teal);font-size:0.85rem;margin-bottom:8px">➕ Addition</div>
+        <div style="font-size:0.95rem;color:#d4c49a;line-height:1.9">total, altogether, combined, sum, in all, more, plus, both, added to, and</div>
+      </div>
+      <div>
+        <div style="font-family:'Cinzel',serif;color:var(--accent3);font-size:0.85rem;margin-bottom:8px">➖ Subtraction</div>
+        <div style="font-size:0.95rem;color:#d4c49a;line-height:1.9">left, remain, difference, fewer, less than, take away, minus, how many more, lost</div>
+      </div>
+      <div>
+        <div style="font-family:'Cinzel',serif;color:var(--accent);font-size:0.85rem;margin-bottom:8px">✖️ Multiplication</div>
+        <div style="font-size:0.95rem;color:#d4c49a;line-height:1.9">times, each, per, groups of, double, triple, product, every, twice</div>
+      </div>
+      <div>
+        <div style="font-family:'Cinzel',serif;color:var(--accent2);font-size:0.85rem;margin-bottom:8px">➗ Division</div>
+        <div style="font-size:0.95rem;color:#d4c49a;line-height:1.9">share, split, each, equal groups, divided by, half, quotient, per</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// =============================================
+// DATA — Harry Potter word problems
+// =============================================
+const PROBLEMS = [
+  {
+    id: 1, category: 'addition',
+    text: "Hermione helps Ron choose a replacement wand at Ollivander's. The shop stocks <key>32</key> wand varieties on its shelves, but Mr. Ollivander mentions he could make <key>14</key> more custom varieties on request. How many wand varieties are there to choose from in total?",
+    icon: '🪄',
+    nums: [32, 14],
+    op: '+',
+    answer: 46,
+    groupLabels: ['Stocked wands', 'Custom wands'],
+    step1explain: "Imagine the wand shop. Count the wands already on the shelves — that's <strong>32</strong>. Then picture 14 more that Ollivander could craft. We're combining two groups, so we add!",
+    step2explain: "You are counting 32 wands already in stock and 14 more that could be made. How many wand choices is that altogether?",
+    step3explain: "Add 32 + 14. You can break it apart: 30 + 10 = 40, then 2 + 4 = 6, so 40 + 6 = <strong>46</strong>.",
+    hint1: "There are two separate groups of wands. First group: wands already in stock. Second group: wands he could make. We want the grand total.",
+    hint2: "You are combining two groups of wands together. The equation is: 32 + 14 = ?",
+    hint3: "32 + 14: start with the tens (30 + 10 = 40), then add the ones (2 + 4 = 6). Total: 46.",
+  },
+  {
+    id: 2, category: 'subtraction',
+    text: "Harry starts the year with <key>150</key> Galleons in his Gringotts vault. After buying all his school supplies on Diagon Alley, he has spent <key>67</key> Galleons. How many Galleons does Harry have left?",
+    icon: '🪙',
+    nums: [150, 67],
+    op: '-',
+    answer: 83,
+    groupLabels: ['Starting Galleons', 'Spent Galleons'],
+    step1explain: "Picture Harry's vault full of <strong>150</strong> gold coins. Now imagine taking <strong>67</strong> away to pay for robes, books, and potion ingredients. We're finding what's left.",
+    step2explain: "Harry has 150 Galleons and has used 67 of them. How many Galleons does he have remaining?",
+    step3explain: "150 − 67: try 150 − 70 = 80, then add back 3 (because we subtracted 3 too many): 80 + 3 = <strong>83</strong>.",
+    hint1: "We start with a full amount and remove some. What remains? This is a taking-away situation.",
+    hint2: "You are taking 67 Galleons away from 150. The equation is: 150 − 67 = ?",
+    hint3: "Round 67 to 70: 150 − 70 = 80. Then add 3 back (since 70 is 3 more than 67): 80 + 3 = 83.",
+  },
+  {
+    id: 3, category: 'multiplication',
+    text: "Professor Sprout needs to re-pot mandrakes. There are <key>6</key> greenhouse tables, and each table holds <key>8</key> mandrake pots. How many mandrakes does Professor Sprout need to re-pot in total?",
+    icon: '🌿',
+    nums: [6, 8],
+    op: '×',
+    answer: 48,
+    groupLabels: ['Table 1','Table 2','Table 3','Table 4','Table 5','Table 6'],
+    step1explain: "Picture 6 long greenhouse tables. On <em>each</em> table sit exactly <strong>8</strong> mandrake pots in their little earthy homes. We have equal groups — that's multiplication!",
+    step2explain: "You have 6 tables with 8 pots on every single one of them. How many pots are there in total?",
+    step3explain: "6 × 8: think of it as 6 groups of 8. Or use: 6 × 8 = 6 × 4 × 2 = 24 × 2 = <strong>48</strong>.",
+    hint1: "Every table has the SAME number of pots. When groups are equal in size, you can use multiplication instead of adding repeatedly.",
+    hint2: "You have 6 tables with 8 pots on each one. The equation is: 6 × 8 = ?",
+    hint3: "6 × 8 = 48. You can check: 8 + 8 = 16, 16 + 16 = 32, 32 + 16 = 48. ✓",
+  },
+  {
+    id: 4, category: 'division',
+    text: "Madam Hooch has <key>35</key> Quidditch balls to distribute equally among <key>7</key> teams practising today. How many balls does each team receive?",
+    icon: '🏐',
+    nums: [35, 7],
+    op: '÷',
+    answer: 5,
+    groupLabels: ['Total balls','Teams'],
+    step1explain: "Imagine <strong>35</strong> balls laid on the pitch. Madam Hooch divides them into <strong>7</strong> equal piles — one for each team. We need to find the size of each pile.",
+    step2explain: "You are distributing 35 balls equally among 7 teams. How many balls does each team receive?",
+    step3explain: "35 ÷ 7: think 'what times 7 equals 35?' → 7 × 5 = 35, so the answer is <strong>5</strong>.",
+    hint1: "We're sharing a total equally into groups. This is the classic division situation.",
+    hint2: "You are dividing 35 balls equally into 7 teams. The equation is: 35 ÷ 7 = ?",
+    hint3: "Think backwards: 7 × ? = 35. Since 7 × 5 = 35, each team gets 5 balls.",
+  },
+  {
+    id: 5, category: 'addition',
+    text: "The Hogwarts library has <key>428</key> books in the Restricted Section and <key>193</key> books in the regular section that Hermione hasn't read yet. How many unread books are there altogether?",
+    icon: '📚',
+    nums: [428, 193],
+    op: '+',
+    answer: 621,
+    groupLabels: ['Restricted books', 'Regular books'],
+    step1explain: "Picture two library shelves — one guarded and foreboding with <strong>428</strong> books, one open and welcoming with <strong>193</strong>. We want the grand total of unread books.",
+    step2explain: "You have 428 unread books in one section and 193 unread books in another. How many unread books are there in all?",
+    step3explain: "428 + 193: add hundreds (400 + 100 = 500), tens (20 + 90 = 110), ones (8 + 3 = 11). 500 + 110 + 11 = <strong>621</strong>.",
+    hint1: "Two separate collections are being combined. Combining = addition.",
+    hint2: "You are combining two separate collections of books. The equation is: 428 + 193 = ?",
+    hint3: "Break it up: 428 + 200 = 628, then subtract 7 (because 193 is 7 less than 200): 628 − 7 = 621.",
+  },
+  {
+    id: 6, category: 'subtraction',
+    text: "Dumbledore's Army has <key>25</key> members. After <key>9</key> members are caught by Umbridge and suspended, how many members remain free to continue practising?",
+    icon: '⚡',
+    nums: [25, 9],
+    op: '-',
+    answer: 16,
+    groupLabels: ['DA Members', 'Caught by Umbridge'],
+    step1explain: "The DA starts with <strong>25</strong> brave members. Then Umbridge swoops in and catches <strong>9</strong> of them. We need to find how many are still free.",
+    step2explain: "You started with 25 DA members and 9 of them have been caught. How many members are still free?",
+    step3explain: "25 − 9: count up from 9 to 25. 9 + 6 = 15, 15 + 10 = 25 — that's 16 steps. Answer: <strong>16</strong>.",
+    hint1: "A group is reduced when some members are taken away. Start big, remove some, find what's left.",
+    hint2: "You are taking 9 caught members away from 25. The equation is: 25 − 9 = ?",
+    hint3: "25 − 9: think 25 − 10 = 15, then add 1 back (because we subtracted 1 too many): 15 + 1 = 16.",
+  },
+  {
+    id: 7, category: 'multiplication',
+    text: "Fred and George's Weasleys' Wizard Wheezes sells <key>9</key> different types of Skiving Snackboxes. If the shop sells <key>12</key> boxes of each type every day, how many Snackboxes are sold daily in total?",
+    icon: '🍬',
+    nums: [9, 12],
+    op: '×',
+    answer: 108,
+    groupLabels: null,
+    step1explain: "Picture a shelf with <strong>9</strong> different Snackbox flavours. Each type has <strong>12</strong> sales per day. We have 9 equal groups of 12 — time to multiply!",
+    step2explain: "You have 9 types of Snackboxes and each type sells 12 boxes every day. How many Snackboxes are sold in total each day?",
+    step3explain: "9 × 12: use 9 × 10 = 90, then 9 × 2 = 18. Add them: 90 + 18 = <strong>108</strong>.",
+    hint1: "9 equal groups, each the same size. Repeated equal groups → multiplication.",
+    hint2: "You have 9 types of boxes selling 12 each day. The equation is: 9 × 12 = ?",
+    hint3: "9 × 12 = 9 × 10 + 9 × 2 = 90 + 18 = 108.",
+  },
+  {
+    id: 8, category: 'division',
+    text: "Professor Slughorn brews a large batch of Felix Felicis containing <key>72</key> drops of luck. He wants to fill small vials with exactly <key>9</key> drops each to give as prizes. How many complete vials can he fill?",
+    icon: '🧪',
+    nums: [72, 9],
+    op: '÷',
+    answer: 8,
+    groupLabels: ['Total drops','Drops per vial'],
+    step1explain: "Imagine <strong>72</strong> precious golden drops. Slughorn carefully measures <strong>9</strong> drops into each vial. We're dividing the total into equal portions.",
+    step2explain: "You are filling vials with 9 drops each from a batch of 72 drops. How many complete vials can be filled?",
+    step3explain: "72 ÷ 9: what times 9 = 72? 9 × 8 = 72. Answer: <strong>8</strong> vials.",
+    hint1: "A total is being divided into equal-sized groups. We need the number of groups.",
+    hint2: "You are dividing 72 drops into vials of 9 drops each. The equation is: 72 ÷ 9 = ?",
+    hint3: "Use the multiplication family: 9 × ? = 72. You know 9 × 8 = 72, so the answer is 8.",
+  },
+  {
+    id: 9, category: 'addition',
+    text: "Neville collects Chocolate Frog cards. He already has <key>47</key> cards, and his gran sends him <key>38</key> more for his birthday. How many cards does Neville have now?",
+    icon: '🐸',
+    nums: [47, 38],
+    op: '+',
+    answer: 85,
+    groupLabels: ['Cards already owned', 'New cards from Gran'],
+    step1explain: "Imagine <strong>47</strong> cards spread on Neville's bed, then <strong>38</strong> more arriving in the post. Both collections join together.",
+    step2explain: "Neville starts with 47 cards and receives 38 more. What operation combines two amounts into a total?",
+    step3explain: "47 + 38: add the ones first (7 + 8 = 15, carry 1), then tens (4 + 3 + 1 = 8). Answer: <strong>85</strong>.",
+    hint1: "Two separate amounts are being combined into one total. That's addition.",
+    hint2: "Cards he had PLUS cards he received. Write: 47 + 38 = ?",
+    hint3: "47 + 38: 47 + 30 = 77, then 77 + 8 = 85.",
+  },
+  {
+    id: 10, category: 'subtraction',
+    text: "The Hogwarts Quidditch pitch has <key>300</key> seats. After all the Gryffindor and Slytherin supporters take their places, only <key>84</key> seats remain empty. How many seats are occupied?",
+    icon: '🏟️',
+    nums: [300, 84],
+    op: '-',
+    answer: 216,
+    groupLabels: ['Total seats', 'Empty seats'],
+    step1explain: "Picture <strong>300</strong> seats in the stadium with <strong>84</strong> dark empty gaps scattered around. We need to find the filled ones.",
+    step2explain: "300 seats total, 84 are empty. How many are taken? Subtract the empty from the total.",
+    step3explain: "300 − 84: 300 − 80 = 220, then 220 − 4 = 216. Answer: <strong>216</strong> seats occupied.",
+    hint1: "We know the total and one part (empty seats). Subtract to find the other part (occupied seats).",
+    hint2: "Occupied seats = total − empty. Write: 300 − 84 = ?",
+    hint3: "300 − 84: try 300 − 84 = 300 − 80 − 4 = 220 − 4 = 216.",
+  },
+  {
+    id: 11, category: 'multiplication',
+    text: "Ollivander's wand shop has <key>7</key> display cases. Each case holds exactly <key>15</key> wands. How many wands are on display in total?",
+    icon: '🪄',
+    nums: [7, 15],
+    op: '×',
+    answer: 105,
+    groupLabels: ['Case 1','Case 2','Case 3','Case 4','Case 5','Case 6','Case 7'],
+    step1explain: "Picture <strong>7</strong> glass cases, each with an orderly row of <strong>15</strong> wands glowing faintly inside.",
+    step2explain: "7 cases, each holding 15 wands. Equal groups — that means multiplication.",
+    step3explain: "7 × 15: split 15 into 10 + 5. 7 × 10 = 70, 7 × 5 = 35. 70 + 35 = <strong>105</strong>.",
+    hint1: "Equal groups of the same size always means multiplication.",
+    hint2: "Number of cases × wands per case. Write: 7 × 15 = ?",
+    hint3: "7 × 15 = 7 × 10 + 7 × 5 = 70 + 35 = 105.",
+  },
+  {
+    id: 12, category: 'division',
+    text: "Professor McGonagall has <key>96</key> essays to mark over <key>8</key> evenings. If she marks the same number each evening, how many essays does she mark per evening?",
+    icon: '📝',
+    nums: [96, 8],
+    op: '÷',
+    answer: 12,
+    groupLabels: ['Total essays', 'Evenings'],
+    step1explain: "Picture a towering pile of <strong>96</strong> parchment rolls split equally across <strong>8</strong> evenings on Professor McGonagall's desk.",
+    step2explain: "96 essays spread equally over 8 evenings. We're sharing a total into equal groups — division.",
+    step3explain: "96 ÷ 8: 8 × 12 = 96. Answer: <strong>12</strong> essays per evening.",
+    hint1: "A total is being shared into an equal number of groups. That's division.",
+    hint2: "Essays per evening = total ÷ evenings. Write: 96 ÷ 8 = ?",
+    hint3: "Think: 8 × ? = 96. 8 × 10 = 80, 8 × 2 = 16, so 8 × 12 = 96.",
+  },
+  {
+    id: 13, category: 'addition',
+    text: "During the Battle of Hogwarts, <key>236</key> students and staff defend the castle on the first wave and <key>179</key> more arrive to help in the second wave. How many defenders are there in total?",
+    icon: '⚔️',
+    nums: [236, 179],
+    op: '+',
+    answer: 415,
+    groupLabels: ['First wave', 'Second wave'],
+    step1explain: "Two waves of defenders stream through the gates: <strong>236</strong> brave souls first, then <strong>179</strong> more rushing to join them.",
+    step2explain: "Two groups of defenders join forces. Add the two waves together.",
+    step3explain: "236 + 179: ones 6 + 9 = 15 (write 5 carry 1), tens 3 + 7 + 1 = 11 (write 1 carry 1), hundreds 2 + 1 + 1 = 4. Answer: <strong>415</strong>.",
+    hint1: "Two groups combining into one total always means addition.",
+    hint2: "First wave + second wave. Write: 236 + 179 = ?",
+    hint3: "236 + 179: 236 + 180 = 416, then 416 − 1 = 415.",
+  },
+  {
+    id: 14, category: 'subtraction',
+    text: "The Triwizard Tournament trophy room has <key>512</key> magical artefacts catalogued. After the Ministry removes <key>137</key> for inspection, how many remain on display?",
+    icon: '🏆',
+    nums: [512, 137],
+    op: '-',
+    answer: 375,
+    groupLabels: ['Total artefacts', 'Removed for inspection'],
+    step1explain: "Imagine <strong>512</strong> glittering objects in glass cases. Ministry officials carry away <strong>137</strong> of them in magical crates.",
+    step2explain: "512 total, 137 taken away. Something is being removed from a total — subtraction.",
+    step3explain: "512 − 137: 512 − 100 = 412, 412 − 37 = 375. Answer: <strong>375</strong>.",
+    hint1: "A portion is being removed from a whole. That means subtraction.",
+    hint2: "Remaining = total − removed. Write: 512 − 137 = ?",
+    hint3: "512 − 137: 512 − 100 = 412, then 412 − 30 = 382, then 382 − 7 = 375.",
+  },
+  {
+    id: 15, category: 'multiplication',
+    text: "The Hogwarts greenhouses each contain <key>9</key> rows of plant beds. Each row has <key>13</key> plants. How many plants are in each greenhouse?",
+    icon: '🌿',
+    nums: [9, 13],
+    op: '×',
+    answer: 117,
+    groupLabels: ['Row 1','Row 2','Row 3','Row 4','Row 5','Row 6','Row 7','Row 8','Row 9'],
+    step1explain: "Picture <strong>9</strong> neat rows of earth, each with <strong>13</strong> plants stretching along it in the warm greenhouse.",
+    step2explain: "9 equal rows with 13 plants in each. Equal groups — multiplication.",
+    step3explain: "9 × 13: split 13 into 10 + 3. 9 × 10 = 90, 9 × 3 = 27. 90 + 27 = <strong>117</strong>.",
+    hint1: "Rows of equal size always means multiplication.",
+    hint2: "Rows × plants per row. Write: 9 × 13 = ?",
+    hint3: "9 × 13 = 9 × 10 + 9 × 3 = 90 + 27 = 117.",
+  },
+  {
+    id: 16, category: 'division',
+    text: "Hermione has brewed <key>84</key> doses of Polyjuice Potion to share equally among <key>6</key> members of the DA. How many doses does each member receive?",
+    icon: '⚗️',
+    nums: [84, 6],
+    op: '÷',
+    answer: 14,
+    groupLabels: ['Total doses', 'DA members'],
+    step1explain: "Picture <strong>84</strong> tiny flasks of murky potion lined up to be divided equally among <strong>6</strong> DA members.",
+    step2explain: "84 doses, 6 people sharing equally. Dividing a total into equal shares.",
+    step3explain: "84 ÷ 6: 6 × 14 = 84. Answer: <strong>14</strong> doses each.",
+    hint1: "Equal sharing means division.",
+    hint2: "Doses per member = total ÷ members. Write: 84 ÷ 6 = ?",
+    hint3: "Think: 6 × ? = 84. 6 × 10 = 60, 6 × 4 = 24, so 6 × 14 = 84.",
+  },
+];
+
+// =============================================
+// UTILITIES
+// =============================================
+function fisherYates(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+let currentCategory = 'all';
+let problemQueue = [];
+let currentProblem = null;
+let queueIndex = 0;
+let lastSeenId = null;
+let solved = 0;
+let points = 0;
+let streak = 0;
+let vizAnimated = false;
+let step2Unlocked = false;
+let step3Unlocked = false;
+let selectedOp = null;
+let eq1Correct = false;
+let eq2Correct = false;
+
+// =============================================
+// INIT
+// =============================================
+function init() {
+  buildQueue();
+  loadProblem();
+}
+
+function buildQueue() {
+  let pool = currentCategory === 'all' ? [...PROBLEMS] : PROBLEMS.filter(p => p.category === currentCategory);
+  pool = fisherYates(pool);
+  // prevent same problem appearing first in new cycle
+  if (lastSeenId && pool[0].id === lastSeenId && pool.length > 1) {
+    [pool[0], pool[1]] = [pool[1], pool[0]];
+  }
+  problemQueue = pool;
+  queueIndex = 0;
+}
+
+function loadProblem() {
+  if (queueIndex >= problemQueue.length) buildQueue();
+  currentProblem = problemQueue[queueIndex];
+  lastSeenId = currentProblem.id;
+  queueIndex++;
+
+  updateProgress();
+  renderProblem();
+}
+
+function updateProgress() {
+  const total = problemQueue.length;
+  const done = Math.min(queueIndex - 1, total);
+  document.getElementById('progressLabel').textContent = `Problem ${queueIndex} of ${total}`;
+  document.getElementById('progressFill').style.width = `${(done / total) * 100}%`;
+  document.getElementById('solvedCount').textContent = solved;
+  document.getElementById('pointsCount').textContent = points;
+  document.getElementById('streakCount').textContent = streak;
+}
+
+function renderProblem() {
+  const p = currentProblem;
+  // Highlight key numbers
+  let text = p.text.replace(/<key>(\d+)<\/key>/g, '<span class="key-num">$1</span>');
+  document.getElementById('problemText').innerHTML = text;
+  document.getElementById('problemCard').style.display = '';
+  document.getElementById('startBtn').style.display = '';
+  document.getElementById('startBtn').disabled = false;
+  document.getElementById('skipBtnInitial').style.display = '';
+  document.getElementById('stepsContainer').style.display = 'none';
+
+  // Reset state
+  vizAnimated = false;
+  step2Unlocked = false;
+  step3Unlocked = false;
+  selectedOp = null;
+  eq1Correct = false;
+  eq2Correct = false;
+
+  resetStepCards();
+}
+
+function resetStepCards() {
+  const cards = ['step1card','step2card','step3card'];
+  const states = ['step-active','step-locked','step-locked'];
+  cards.forEach((id, i) => {
+    const c = document.getElementById(id);
+    c.className = 'step-card ' + states[i];
+  });
+  ['step2num','step3num'].forEach(id => {
+    document.getElementById(id).textContent = id === 'step2num' ? '2' : '3';
+  });
+  document.getElementById('successArea').style.display = 'none';
+  // Clear lingering feedback text
+  ['step2feedback','step3feedback'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = '';
+  });
+  // Hide hints
+  ['hint1','hint2','hint3'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('visible');
+  });
+}
+
+function startProblem() {
+  // Keep problem card visible; just hide the Begin button
+  document.getElementById('startBtn').style.display = 'none';
+  document.getElementById('skipBtnInitial').style.display = 'none';
+  document.getElementById('stepsContainer').style.display = 'flex';
+  const p = currentProblem;
+
+  // Step 1 — explanation is hint-only, not shown upfront
+  document.getElementById('step1explain').innerHTML = '';
+  // Fold the scene description into hint1 alongside the original hint
+  document.getElementById('hint1').innerHTML = `<strong>Scene:</strong> ${p.step1explain}<br><br><strong>Tip:</strong> ${p.hint1}`;
+  renderViz(false);
+  document.getElementById('animBtn').textContent = '▶ Play Animation';
+
+  // Step 2 (pre-fill content but keep locked)
+  document.getElementById('step2explain').innerHTML = p.step2explain;
+  document.getElementById('hint2').textContent = p.hint2;
+  renderOpSelector();
+  renderEqBuilder();
+
+  // Step 3
+  document.getElementById('step3explain').innerHTML = p.step3explain;
+  document.getElementById('hint3').textContent = p.hint3;
+  renderSolveRow();
+}
+
+// =============================================
+// VISUALISER
+// =============================================
+function renderViz(animate) {
+  const p = currentProblem;
+  const area = document.getElementById('vizArea');
+  area.innerHTML = '';
+
+  const MAX_ICONS = 50; // show all icons for current problem set
+
+  if (p.op === '+') {
+    // Two groups
+    for (let g = 0; g < 2; g++) {
+      const n = p.nums[g];
+      const label = p.groupLabels ? p.groupLabels[g] : `Group ${g+1}`;
+      const showN = Math.min(n, MAX_ICONS);
+      const group = document.createElement('div');
+      group.className = 'viz-group';
+      group.innerHTML = `<div class="viz-group-label">${label}<br><span class="num-badge">${n}</span></div>`;
+      const icons = document.createElement('div');
+      icons.className = 'viz-icons';
+      for (let i = 0; i < showN; i++) {
+        const ic = document.createElement('span');
+        ic.className = 'viz-icon' + (animate ? ' new-item' : '');
+        ic.style.animationDelay = animate ? `${i * 40}ms` : '0';
+        ic.textContent = p.icon;
+        icons.appendChild(ic);
+      }
+      if (n > MAX_ICONS) {
+        const more = document.createElement('div');
+        more.style.cssText = 'font-size:1.3rem;font-weight:900;color:var(--accent);font-family:"Space Mono",monospace;display:block;text-align:center;width:100%;padding:4px 0;letter-spacing:1px';
+        more.textContent = `+ ${n - MAX_ICONS} more`;
+        icons.appendChild(more);
+      }
+      group.appendChild(icons);
+      area.appendChild(group);
+
+      if (g === 0) {
+        const plus = document.createElement('div');
+        plus.className = 'viz-plus';
+        plus.textContent = '+';
+        area.appendChild(plus);
+      }
+    }
+    // Total line
+    const totalLine = document.createElement('div');
+    totalLine.className = 'viz-total-line';
+    totalLine.innerHTML = `<span class="viz-total-label">= ? total ${p.icon}</span>`;
+    area.appendChild(totalLine);
+
+  } else if (p.op === '-') {
+    const [total, removed] = p.nums;
+    const showTotal = Math.min(total, MAX_ICONS);
+    const group = document.createElement('div');
+    group.className = 'viz-group';
+    group.innerHTML = `<div class="viz-group-label">${p.groupLabels ? p.groupLabels[0] : 'Start'}<br><span class="num-badge">${total}</span></div>`;
+    const icons = document.createElement('div');
+    icons.className = 'viz-icons';
+    for (let i = 0; i < showTotal; i++) {
+      const ic = document.createElement('span');
+      ic.className = 'viz-icon' + (animate && i >= showTotal - Math.min(removed, showTotal) ? ' new-item' : '');
+      ic.style.cssText = (animate && i >= showTotal - Math.min(removed, showTotal)) ? 'color:var(--accent3);text-decoration:line-through;opacity:0.5' : '';
+      if (i >= showTotal - Math.min(removed, showTotal)) {
+        ic.style.cssText += ';color:var(--accent3);opacity:0.45;';
+      }
+      ic.textContent = p.icon;
+      icons.appendChild(ic);
+    }
+    if (total > MAX_ICONS) {
+      const more = document.createElement('div');
+      more.style.cssText = 'font-size:1.3rem;font-weight:900;color:var(--accent);font-family:"Space Mono",monospace;display:block;width:100%;padding:4px 0;letter-spacing:1px';
+      more.textContent = `+ ${total - MAX_ICONS} more`;
+      icons.appendChild(more);
+    }
+    group.appendChild(icons);
+    area.appendChild(group);
+    const info = document.createElement('div');
+    info.style.cssText = 'width:100%;padding-top:10px;border-top:1px dashed var(--border);font-size:0.9rem;color:var(--accent3);font-style:italic';
+    info.innerHTML = `${p.groupLabels ? p.groupLabels[1] : 'Removed'}: <span class="num-badge" style="color:var(--accent3);border-color:var(--accent3)">${removed}</span> are taken away`;
+    area.appendChild(info);
+
+  } else if (p.op === '×') {
+    const [groups, perGroup] = p.nums;
+    const showGroups = Math.min(groups, 12);
+    const showPer = Math.min(perGroup, 12);
+    for (let g = 0; g < showGroups; g++) {
+      const label = p.groupLabels ? p.groupLabels[g] || `Group ${g+1}` : `Group ${g+1}`;
+      const grp = document.createElement('div');
+      grp.className = 'viz-group';
+      grp.innerHTML = `<div class="viz-group-label" style="font-size:0.65rem">${label}</div>`;
+      const ic = document.createElement('div');
+      ic.className = 'viz-icons';
+      for (let i = 0; i < showPer; i++) {
+        const s = document.createElement('span');
+        s.className = 'viz-icon' + (animate ? ' new-item' : '');
+        s.style.animationDelay = animate ? `${(g * showPer + i) * 30}ms` : '0';
+        s.textContent = p.icon;
+        ic.appendChild(s);
+      }
+      if (perGroup > showPer) {
+        const m = document.createElement('div');
+        m.style.cssText = 'font-size:1.1rem;font-weight:900;color:var(--accent);font-family:"Space Mono",monospace;text-align:center';
+        m.textContent = `+${perGroup-showPer}`;
+        ic.appendChild(m);
+      }
+      grp.appendChild(ic);
+      area.appendChild(grp);
+    }
+    if (groups > showGroups) {
+      const m = document.createElement('div');
+      m.style.cssText = 'font-size:1.2rem;font-weight:900;color:var(--accent);font-family:"Space Mono",monospace;font-style:normal;align-self:center';
+      m.textContent = `+${groups - showGroups} more groups`;
+      area.appendChild(m);
+    }
+
+  } else if (p.op === '÷') {
+    const [total, divisor] = p.nums;
+
+    // --- Row 1: total items pool ---
+    const showTotal = Math.min(total, MAX_ICONS);
+    const poolGroup = document.createElement('div');
+    poolGroup.className = 'viz-group';
+    poolGroup.style.cssText = 'width:100%';
+    poolGroup.innerHTML = `<div class="viz-group-label">${p.groupLabels ? p.groupLabels[0] : 'Total'} <span class="num-badge">${total}</span></div>`;
+    const poolIcons = document.createElement('div');
+    poolIcons.className = 'viz-icons';
+    for (let i = 0; i < showTotal; i++) {
+      const s = document.createElement('span');
+      s.className = 'viz-icon' + (animate ? ' new-item' : '');
+      s.style.animationDelay = animate ? `${i * 35}ms` : '0';
+      s.textContent = p.icon;
+      poolIcons.appendChild(s);
+    }
+    if (total > MAX_ICONS) {
+      const m = document.createElement('div');
+      m.style.cssText = 'font-size:1.3rem;font-weight:900;color:var(--accent);font-family:"Space Mono",monospace;padding:4px 0;letter-spacing:1px';
+      m.textContent = `+ ${total - MAX_ICONS} more`;
+      poolIcons.appendChild(m);
+    }
+    poolGroup.appendChild(poolIcons);
+    area.appendChild(poolGroup);
+
+    // --- Divider arrow ---
+    const divLine = document.createElement('div');
+    divLine.style.cssText = 'width:100%;display:flex;align-items:center;gap:10px;padding:8px 0';
+    divLine.innerHTML = `
+      <div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--border))"></div>
+      <div style="font-family:\'Space Mono\',monospace;color:var(--teal);font-size:0.85rem;white-space:nowrap">
+        ÷ split into ${divisor} ${p.groupLabels ? p.groupLabels[1] : 'groups'} ↓
+      </div>
+      <div style="flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)"></div>`;
+    area.appendChild(divLine);
+
+    // --- Row 2: divisor groups (each shown as a labelled box) ---
+    const groupsRow = document.createElement('div');
+    groupsRow.style.cssText = 'width:100%;display:flex;flex-wrap:wrap;gap:8px;justify-content:center';
+    const showGroups = Math.min(divisor, 10);
+    for (let g = 0; g < showGroups; g++) {
+      const vial = document.createElement('div');
+      vial.style.cssText = `
+        background:rgba(78,201,176,0.07);
+        border:1px dashed rgba(78,201,176,0.4);
+        border-radius:8px;
+        padding:8px 10px;
+        display:flex;flex-direction:column;align-items:center;gap:4px;
+        min-width:52px;
+      `;
+      const delayBase = (showTotal * 35) + g * 80;
+      const label = document.createElement('div');
+      label.style.cssText = 'font-size:0.65rem;color:var(--teal);font-family:\'Cinzel\',serif;letter-spacing:0.5px';
+      label.textContent = `#${g + 1}`;
+      const qmark = document.createElement('div');
+      qmark.style.cssText = 'font-family:\'Space Mono\',monospace;font-size:1.1rem;color:var(--muted)';
+      qmark.textContent = '?';
+      if (animate) {
+        qmark.style.animation = `pop-in 0.4s cubic-bezier(0.34,1.56,0.64,1) ${delayBase}ms both`;
+      }
+      vial.appendChild(label);
+      vial.appendChild(qmark);
+      groupsRow.appendChild(vial);
+    }
+    if (divisor > showGroups) {
+      const m = document.createElement('div');
+      m.style.cssText = 'font-size:0.8rem;color:var(--muted);font-style:italic;align-self:center';
+      m.textContent = `…${divisor - showGroups} more`;
+      groupsRow.appendChild(m);
+    }
+    area.appendChild(groupsRow);
+
+    const q = document.createElement('div');
+    q.style.cssText = 'width:100%;text-align:center;font-size:0.9rem;color:var(--accent2);font-style:italic;padding-top:8px';
+    q.textContent = `How many ${p.icon} go into each group?`;
+    area.appendChild(q);
+  }
+}
+
+function animateViz() {
+  const wasAnimated = vizAnimated;
+  vizAnimated = true;
+  renderViz(true);
+  document.getElementById('animBtn').textContent = '↻ Replay Animation';
+
+  // Unlock step 2 after a short delay
+  if (!step2Unlocked) {
+    setTimeout(() => {
+      step2Unlocked = true;
+      unlockStep(2);
+    }, 600);
+  }
+}
+
+function unlockStep(n) {
+  const card = document.getElementById(`step${n}card`);
+  card.className = 'step-card step-active';
+  card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// =============================================
+// STEP 2 — Equation builder
+// =============================================
+function renderOpSelector() {
+  const row = document.getElementById('opSelectRow');
+  row.innerHTML = '';
+  const ops = ['+', '-', '×', '÷'];
+  ops.forEach(op => {
+    const chip = document.createElement('div');
+    chip.className = 'op-chip' + (selectedOp === op ? ' selected' : '');
+    chip.textContent = op;
+    chip.onclick = () => {
+      selectedOp = op;
+      document.querySelectorAll('.op-chip').forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+    };
+    row.appendChild(chip);
+  });
+}
+
+function renderEqBuilder() {
+  const p = currentProblem;
+  const el = document.getElementById('eqBuilder');
+  // Show: [num1] [op?] [num2] = [?]
+  el.innerHTML = `
+    <div class="eq-num-box">${p.nums[0]}</div>
+    <div class="eq-op" id="opDisplay" style="min-width:36px;text-align:center;color:var(--muted)">?</div>
+    <div class="eq-num-box">${p.nums[1]}</div>
+    <div class="eq-op">=</div>
+    <div class="eq-num-box eq-unknown">?</div>
+  `;
+}
+
+function checkEquation() {
+  const p = currentProblem;
+  const fb = document.getElementById('step2feedback');
+
+  if (!selectedOp) {
+    fb.innerHTML = '<span style="color:var(--accent3)">⚠️ Please choose an operation first!</span>';
+    return;
+  }
+
+  const opMap = {'+':'+', '-':'-', '×':'*', '÷':'/'};
+  if (selectedOp === p.op) {
+    // Correct op
+    document.getElementById('opDisplay').textContent = selectedOp;
+    document.getElementById('opDisplay').style.color = 'var(--green)';
+    fb.innerHTML = `<span style="color:var(--green)">✓ Correct! ${selectedOp} is exactly right.</span>`;
+    eq1Correct = true;
+
+    setTimeout(() => {
+      document.getElementById('step2card').className = 'step-card step-done';
+      document.getElementById('step2num').textContent = '✓';
+      if (!step3Unlocked) {
+        step3Unlocked = true;
+        unlockStep(3);
+      }
+    }, 800);
+  } else {
+    fb.innerHTML = `<span style="color:var(--accent3)">✗ Not quite. Think about what the story is asking — are we combining, comparing, sharing, or repeating?</span>`;
+    const chips = document.querySelectorAll('.op-chip');
+    chips.forEach(c => { if (c.textContent === selectedOp) { c.style.borderColor='var(--accent3)'; c.style.color='var(--accent3)'; } });
+    setTimeout(() => {
+      chips.forEach(c => { c.style.borderColor=''; c.style.color=''; });
+    }, 1200);
+  }
+}
+
+// =============================================
+// STEP 3 — Solve
+// =============================================
+function renderSolveRow() {
+  const p = currentProblem;
+  const el = document.getElementById('eqSolve');
+  const needsBreakdown = p.op === '×';
+  el.innerHTML = `
+    <div class="eq-num-box">${p.nums[0]}</div>
+    <div class="eq-op">${p.op}</div>
+    <div class="eq-num-box">${p.nums[1]}</div>
+    <div class="eq-op">=</div>
+    <input class="eq-input" id="answerInput" type="number" placeholder="?" autocomplete="off"
+      onkeydown="if(event.key==='Enter') checkAnswer()">
+    ${needsBreakdown ? `<button class="hint-btn" id="solveBreakdownBtn" onclick="renderSolveBreakdown()" style="margin-left:10px;border-color:var(--accent);color:var(--accent)">🔬 Break it Down</button>` : ''}
+  `;
+  if (needsBreakdown) {
+    const breakArea = document.createElement('div');
+    breakArea.id = 'solveBreakdownArea';
+    breakArea.style.marginTop = '10px';
+    el.parentNode.insertBefore(breakArea, el.nextSibling);
+  }
+}
+
+// Decimal widget state for the solve breakdown
+let solveBdState = {};
+
+function renderSolveBreakdown() {
+  const p = currentProblem;
+  const btn = document.getElementById('solveBreakdownBtn');
+  if (btn) btn.style.display = 'none';
+  const area = document.getElementById('solveBreakdownArea');
+  if (!area) return;
+
+  const [A, B] = p.nums; // e.g. 9 × 12 → split B into round + remainder
+  // Split second number: tens part and ones part
+  const tens = Math.floor(B / 10) * 10;
+  const ones = B % 10;
+  const hasTens = tens > 0;
+  const hasOnes = ones > 0;
+
+  solveBdState = {
+    decOffset: 0,
+    simpleCorrect: false,
+    shiftBackOffset: 0,
+    partADone: false,
+    partBDone: !hasOnes, // skip if no ones
+    sumDone: false,
+    A, B, tens, ones,
+    partAAnswer: A * tens,
+    partBAnswer: A * ones,
+    finalAnswer: A * B,
+  };
+
+  area.innerHTML = `
+    <div style="background:rgba(78,201,176,0.06);border:1px solid rgba(78,201,176,0.25);border-radius:10px;padding:16px;margin-bottom:10px">
+      <div style="font-family:'Cinzel',serif;font-size:0.78rem;color:var(--teal);letter-spacing:1px;margin-bottom:12px;text-transform:uppercase">
+        🔬 Breaking Down ${A} × ${B}
+      </div>
+      <div style="font-size:0.92rem;color:#d4c49a;margin-bottom:14px;line-height:1.6">
+        Split <strong style="color:var(--accent)">${B}</strong> into <strong style="color:var(--accent)">${tens} + ${ones}</strong>. Solve each part, then add.<br>
+        <span style="color:var(--teal)">${A} × ${B} = (${A} × ${tens}) + (${A} × ${ones})</span>
+      </div>
+
+      <!-- PART A: A × tens via decimal widget -->
+      <div id="solveBdPartA" style="background:rgba(0,0,0,0.2);border-radius:8px;padding:14px;margin-bottom:12px;border:1px solid var(--border)">
+        <div style="font-family:'Cinzel',serif;font-size:0.78rem;color:var(--accent2);letter-spacing:1px;margin-bottom:10px">Part A — ${A} × ${tens}</div>
+        <div style="font-size:0.9rem;color:#d4c49a;margin-bottom:12px;line-height:1.6">
+          Use the <strong style="color:var(--accent)">decimal trick</strong>: shift the decimal in ${tens} one place left → it becomes <strong>${tens/10}</strong>. Solve ${A} × ${tens/10}. Then shift right to restore ×${tens > 9 ? 10 : ''}.
+        </div>
+        <div style="text-align:center;margin-bottom:10px">
+          <div style="font-family:'Cinzel',serif;font-size:0.7rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Shift the decimal in <span style="color:var(--accent)">${tens}</span></div>
+          <div id="solveBdDecDisplay" style="display:flex;justify-content:center;align-items:center;gap:3px;margin-bottom:8px"></div>
+          <div style="display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:6px">
+            <button class="arrow-btn" onclick="solveBdShift(-1)">◀</button>
+            <div id="solveBdDecLabel" style="font-family:'Crimson Text',serif;font-size:0.88rem;color:var(--muted);min-width:160px;text-align:center;font-style:italic">Original position</div>
+            <button class="arrow-btn" onclick="solveBdShift(1)">▶</button>
+          </div>
+          <div id="solveBdDecVal" style="font-family:'Space Mono',monospace;font-size:0.85rem;color:var(--teal);text-align:center"></div>
+        </div>
+        <div id="solveBdSimpleEq" style="display:none">
+          <div style="font-family:'Cinzel',serif;font-size:0.7rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;text-align:center">Now solve the simple multiplication</div>
+          <div class="eq-builder" style="margin-bottom:8px">
+            <div class="eq-num-box">${A}</div>
+            <div class="eq-op">×</div>
+            <div class="eq-num-box" id="solveBdShiftedVal">${tens/10}</div>
+            <div class="eq-op">=</div>
+            <input class="eq-input" id="solveBdSimpleInput" type="number" placeholder="?"
+              onkeydown="if(event.key==='Enter') solveBdCheckSimple()">
+          </div>
+          <div style="display:flex;gap:8px;justify-content:center">
+            <button class="step-btn" style="font-size:0.82rem;padding:7px 16px" onclick="solveBdCheckSimple()">✓ Check</button>
+          </div>
+          <div id="solveBdSimpleFb" style="font-size:0.85rem;min-height:18px;text-align:center;margin-top:6px"></div>
+        </div>
+        <div id="solveBdShiftBack" style="display:none;margin-top:10px">
+          <div style="font-family:'Cinzel',serif;font-size:0.7rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;text-align:center">Shift the decimal back in your answer</div>
+          <div id="solveBdResultDisplay" style="display:flex;justify-content:center;align-items:center;gap:3px;margin-bottom:8px"></div>
+          <div style="display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:6px">
+            <button class="arrow-btn" onclick="solveBdShiftResult(-1)">◀</button>
+            <div id="solveBdResultLabel" style="font-family:'Crimson Text',serif;font-size:0.88rem;color:var(--muted);min-width:160px;text-align:center;font-style:italic">Original position</div>
+            <button class="arrow-btn" onclick="solveBdShiftResult(1)">▶</button>
+          </div>
+          <div id="solveBdResultVal" style="font-family:'Space Mono',monospace;font-size:0.85rem;color:var(--teal);text-align:center;margin-bottom:8px"></div>
+          <div style="display:flex;gap:8px;justify-content:center">
+            <button class="step-btn" style="font-size:0.82rem;padding:7px 16px" onclick="solveBdCheckShiftBack()">✓ Lock in ${A} × ${tens} answer</button>
+          </div>
+          <div id="solveBdShiftBackFb" style="font-size:0.85rem;min-height:18px;text-align:center;margin-top:6px"></div>
+        </div>
+        <div id="solveBdPartADone" style="display:none;text-align:center;padding:10px;background:rgba(40,180,80,0.08);border-radius:8px;margin-top:8px">
+          <span style="color:var(--green);font-family:'Space Mono',monospace;font-weight:700">${A} × ${tens} = ${A*tens} ✓</span>
+        </div>
+      </div>
+
+      ${hasOnes ? `
+      <!-- PART B: A × ones -->
+      <div id="solveBdPartB" style="background:rgba(0,0,0,0.2);border-radius:8px;padding:14px;margin-bottom:12px;border:1px solid var(--border);opacity:0.4;pointer-events:none">
+        <div style="font-family:'Cinzel',serif;font-size:0.78rem;color:var(--accent2);letter-spacing:1px;margin-bottom:10px">Part B — ${A} × ${ones}</div>
+        <div style="font-size:0.9rem;color:#d4c49a;margin-bottom:10px">Now the easy part — what is ${A} × ${ones}?</div>
+        <div class="eq-builder" style="margin-bottom:8px">
+          <div class="eq-num-box">${A}</div>
+          <div class="eq-op">×</div>
+          <div class="eq-num-box">${ones}</div>
+          <div class="eq-op">=</div>
+          <input class="eq-input" id="solveBdPartBInput" type="number" placeholder="?"
+            onkeydown="if(event.key==='Enter') solveBdCheckPartB()">
+        </div>
+        <div style="display:flex;gap:8px;justify-content:center">
+          <button class="step-btn" style="font-size:0.82rem;padding:7px 16px" onclick="solveBdCheckPartB()">✓ Check</button>
+        </div>
+        <div id="solveBdPartBFb" style="font-size:0.85rem;min-height:18px;text-align:center;margin-top:6px"></div>
+      </div>` : ''}
+
+      <!-- FINAL SUM -->
+      <div id="solveBdFinalSum" style="background:rgba(0,0,0,0.2);border-radius:8px;padding:14px;border:1px solid var(--border);opacity:0.4;pointer-events:none">
+        <div style="font-family:'Cinzel',serif;font-size:0.78rem;color:var(--accent2);letter-spacing:1px;margin-bottom:10px">Final Step — Add the Parts</div>
+        <div style="font-size:0.9rem;color:#d4c49a;margin-bottom:10px">${A} × ${tens} = ${A*tens} and ${hasOnes ? `${A} × ${ones} = ${A*ones}` : '(no ones)'}. Now add them.</div>
+        <div class="eq-builder" style="margin-bottom:8px">
+          <div class="eq-num-box">${A*tens}</div>
+          <div class="eq-op">+</div>
+          <div class="eq-num-box">${A*ones}</div>
+          <div class="eq-op">=</div>
+          <input class="eq-input" id="solveBdFinalInput" type="number" placeholder="?"
+            onkeydown="if(event.key==='Enter') solveBdCheckFinal()">
+        </div>
+        <div style="display:flex;gap:8px;justify-content:center">
+          <button class="step-btn" style="font-size:0.82rem;padding:7px 16px" onclick="solveBdCheckFinal()">✓ Check</button>
+        </div>
+        <div id="solveBdFinalFb" style="font-size:0.85rem;min-height:18px;text-align:center;margin-top:6px"></div>
+      </div>
+    </div>
+  `;
+
+  solveBdRenderDec();
+}
+
+function solveBdDigitRow(numStr, dotAfterIdx) {
+  let html = '<div style="display:flex;align-items:center;gap:2px;">';
+  const chars = numStr.split('');
+  for (let i = 0; i <= chars.length; i++) {
+    if (i === dotAfterIdx) {
+      html += `<div style="width:14px;height:56px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;">
+        <div style="width:12px;height:12px;background:var(--accent);border-radius:50%;box-shadow:0 0 14px var(--accent)"></div>
+      </div>`;
+    }
+    if (i < chars.length) {
+      html += `<div style="background:var(--digit-bg);border:1px solid var(--border);border-radius:6px;width:48px;height:60px;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:1.8rem;font-weight:700;color:var(--text)">${chars[i]}</div>`;
+    }
+  }
+  html += '</div>';
+  return html;
+}
+
+function solveBdRenderDec() {
+  const s = solveBdState;
+  const { tens, decOffset } = s;
+  const value = tens * Math.pow(10, decOffset);
+  const label = document.getElementById('solveBdDecLabel');
+  const valEl = document.getElementById('solveBdDecVal');
+  if (!label) return;
+
+  const tensStr = tens.toString();
+  let dotAfter = tensStr.length + decOffset;
+  let displayStr = tensStr;
+  if (dotAfter > displayStr.length) displayStr += '0'.repeat(dotAfter - displayStr.length);
+  while (dotAfter <= 0) { displayStr = '0' + displayStr; dotAfter++; }
+
+  document.getElementById('solveBdDecDisplay').innerHTML = solveBdDigitRow(displayStr, dotAfter);
+
+  if (decOffset === 0) {
+    label.textContent = 'Original position';
+    valEl.innerHTML = `<span style="color:var(--muted)">${tens} — shift left ◀ once to simplify</span>`;
+    document.getElementById('solveBdSimpleEq').style.display = 'none';
+  } else if (decOffset === -1) {
+    label.textContent = `1 step left → ÷10 → value = ${tens/10}`;
+    valEl.innerHTML = `<span style="color:var(--teal)">${tens} became ${tens/10} ✓ — now solve ${s.A} × ${tens/10} below</span>`;
+    document.getElementById('solveBdSimpleEq').style.display = 'block';
+    document.getElementById('solveBdShiftedVal').textContent = tens/10;
+  } else if (decOffset < -1) {
+    label.textContent = 'Too far — shift right ▶';
+    valEl.innerHTML = `<span style="color:var(--accent3)">Value = ${value} — too small. Go back.</span>`;
+    document.getElementById('solveBdSimpleEq').style.display = 'none';
+  } else {
+    label.textContent = `${decOffset} step right — value = ${value}`;
+    valEl.innerHTML = `<span style="color:var(--accent3)">${value} — try shifting LEFT ◀</span>`;
+    document.getElementById('solveBdSimpleEq').style.display = 'none';
+  }
+}
+
+function solveBdShift(dir) {
+  if (solveBdState.partADone) return;
+  solveBdState.decOffset = Math.max(-2, Math.min(1, solveBdState.decOffset + dir));
+  solveBdRenderDec();
+}
+
+function solveBdCheckSimple() {
+  const s = solveBdState;
+  const input = document.getElementById('solveBdSimpleInput');
+  const fb = document.getElementById('solveBdSimpleFb');
+  const correctVal = s.A * (s.tens / 10);
+  const val = parseInt(input.value, 10);
+  if (val === correctVal) {
+    input.className = 'eq-input correct';
+    fb.innerHTML = `<span style="color:var(--green)">✓ ${s.A} × ${s.tens/10} = ${correctVal}. Now shift the decimal right to restore ×10!</span>`;
+    s.simpleCorrect = true;
+    setTimeout(() => {
+      document.getElementById('solveBdShiftBack').style.display = 'block';
+      solveBdRenderResult();
+    }, 600);
+  } else {
+    input.className = 'eq-input wrong';
+    fb.innerHTML = `<span style="color:var(--accent3)">✗ Not quite — try again!</span>`;
+    setTimeout(() => { input.className = 'eq-input'; }, 600);
+  }
+}
+
+function solveBdRenderResult() {
+  const s = solveBdState;
+  const base = s.A * (s.tens / 10);
+  const value = base * Math.pow(10, s.shiftBackOffset);
+  const label = document.getElementById('solveBdResultLabel');
+  const valEl = document.getElementById('solveBdResultVal');
+  if (!label) return;
+
+  const baseStr = base.toString();
+  let dotAfter = baseStr.length + s.shiftBackOffset;
+  let displayStr = baseStr;
+  if (dotAfter > displayStr.length) displayStr += '0'.repeat(dotAfter - displayStr.length);
+  while (dotAfter <= 0) { displayStr = '0' + displayStr; dotAfter++; }
+
+  document.getElementById('solveBdResultDisplay').innerHTML = solveBdDigitRow(displayStr, dotAfter);
+
+  if (s.shiftBackOffset === 0) {
+    label.textContent = 'Original — shift right ▶ once';
+    valEl.innerHTML = `<span style="color:var(--muted)">${base} — shift right to restore the ×10</span>`;
+  } else if (s.shiftBackOffset === 1) {
+    label.textContent = `1 step right → ×10 → value = ${value}`;
+    valEl.innerHTML = `<span style="color:var(--green)">${value} ✓ — that's ${s.A} × ${s.tens}!</span>`;
+  } else if (s.shiftBackOffset > 1) {
+    label.textContent = 'Too far — go back ◀';
+    valEl.innerHTML = `<span style="color:var(--accent3)">${value} — shifted too far.</span>`;
+  } else {
+    label.textContent = `${s.shiftBackOffset} left — value = ${value}`;
+    valEl.innerHTML = `<span style="color:var(--accent3)">${value} — try shifting RIGHT ▶</span>`;
+  }
+}
+
+function solveBdShiftResult(dir) {
+  if (solveBdState.partADone) return;
+  solveBdState.shiftBackOffset = Math.max(-1, Math.min(2, solveBdState.shiftBackOffset + dir));
+  solveBdRenderResult();
+}
+
+function solveBdCheckShiftBack() {
+  const s = solveBdState;
+  const fb = document.getElementById('solveBdShiftBackFb');
+  const value = (s.A * (s.tens / 10)) * Math.pow(10, s.shiftBackOffset);
+  if (value === s.partAAnswer) {
+    fb.innerHTML = `<span style="color:var(--green)">✓ ${s.A} × ${s.tens} = ${s.partAAnswer}!</span>`;
+    s.partADone = true;
+    document.getElementById('solveBdPartADone').style.display = 'block';
+    document.getElementById('solveBdShiftBack').style.opacity = '0.5';
+    if (s.ones > 0) {
+      setTimeout(() => {
+        const partB = document.getElementById('solveBdPartB');
+        if (partB) { partB.style.opacity = '1'; partB.style.pointerEvents = ''; partB.scrollIntoView({ behavior:'smooth', block:'nearest' }); }
+      }, 500);
+    } else {
+      setTimeout(() => {
+        const finalSum = document.getElementById('solveBdFinalSum');
+        if (finalSum) { finalSum.style.opacity = '1'; finalSum.style.pointerEvents = ''; finalSum.scrollIntoView({ behavior:'smooth', block:'nearest' }); }
+      }, 500);
+    }
+  } else {
+    fb.innerHTML = `<span style="color:var(--accent3)">Not quite — current value is ${value}. Shift right ▶ once to get ${s.partAAnswer}.</span>`;
+  }
+}
+
+function solveBdCheckPartB() {
+  const s = solveBdState;
+  const input = document.getElementById('solveBdPartBInput');
+  const fb = document.getElementById('solveBdPartBFb');
+  const val = parseInt(input.value, 10);
+  if (val === s.partBAnswer) {
+    input.className = 'eq-input correct';
+    fb.innerHTML = `<span style="color:var(--green)">✓ ${s.A} × ${s.ones} = ${s.partBAnswer}!</span>`;
+    s.partBDone = true;
+    setTimeout(() => {
+      const finalSum = document.getElementById('solveBdFinalSum');
+      if (finalSum) { finalSum.style.opacity = '1'; finalSum.style.pointerEvents = ''; finalSum.scrollIntoView({ behavior:'smooth', block:'nearest' }); }
+    }, 500);
+  } else {
+    input.className = 'eq-input wrong';
+    fb.innerHTML = `<span style="color:var(--accent3)">✗ Not quite — try again!</span>`;
+    setTimeout(() => { input.className = 'eq-input'; }, 600);
+  }
+}
+
+function solveBdCheckFinal() {
+  const s = solveBdState;
+  const input = document.getElementById('solveBdFinalInput');
+  const fb = document.getElementById('solveBdFinalFb');
+  const val = parseInt(input.value, 10);
+  if (val === s.finalAnswer) {
+    input.className = 'eq-input correct';
+    fb.innerHTML = `<span style="color:var(--green)">✓ ${s.partAAnswer} + ${s.partBAnswer} = ${s.finalAnswer} — so ${s.A} × ${s.B} = ${s.finalAnswer}!</span>`;
+    s.sumDone = true;
+    const mainInput = document.getElementById('answerInput');
+    if (mainInput) { mainInput.value = s.finalAnswer; mainInput.className = 'eq-input correct'; }
+    setTimeout(() => checkAnswer(), 700);
+  } else {
+    input.className = 'eq-input wrong';
+    fb.innerHTML = `<span style="color:var(--accent3)">✗ Not quite — try again!</span>`;
+    setTimeout(() => { input.className = 'eq-input'; }, 600);
+  }
+}
+
+function checkAnswer() {
+  const p = currentProblem;
+  const input = document.getElementById('answerInput');
+  const val = parseInt(input.value, 10);
+  const fb = document.getElementById('step3feedback');
+
+  if (isNaN(val)) {
+    fb.innerHTML = '<span style="color:var(--accent3)">Please enter a number!</span>';
+    return;
+  }
+
+  if (val === p.answer) {
+    input.className = 'eq-input correct';
+    fb.innerHTML = `<span style="color:var(--green)">🎉 Brilliant! ${p.nums[0]} ${p.op} ${p.nums[1]} = ${p.answer}</span>`;
+    document.getElementById('step3card').className = 'step-card step-done';
+    document.getElementById('step3num').textContent = '✓';
+
+    // Award points
+    solved++;
+    streak++;
+    points += 10 + (streak >= 3 ? 5 : 0); // streak bonus
+    updateProgress();
+
+    // Log to history
+    addToHistory(p, true);
+
+    setTimeout(() => showSuccess(), 500);
+  } else {
+    input.className = 'eq-input wrong';
+    streak = 0;
+    updateProgress();
+    setTimeout(() => { input.className = 'eq-input'; }, 600);
+    const diff = Math.abs(val - p.answer);
+    let tip = '';
+    if (diff <= 2) tip = ' So close! Check your ones column.';
+    else if (diff <= 10) tip = ' Almost! Double-check your carrying/borrowing.';
+    fb.innerHTML = `<span style="color:var(--accent3)">✗ Not quite.${tip} Try again!</span>`;
+  }
+}
+
+// =============================================
+// HISTORY LOG
+// =============================================
+const historyLog = [];
+const opNames = { '+': 'Addition', '-': 'Subtraction', '×': 'Multiplication', '÷': 'Division' };
+const opColors = { '+': 'var(--teal)', '-': 'var(--accent3)', '×': 'var(--accent)', '÷': 'var(--accent2)' };
+
+function addToHistory(p, correct) {
+  const entry = {
+    text: p.text.replace(/<[^>]+>/g, '').substring(0, 60) + '…',
+    equation: `${p.nums[0]} ${p.op} ${p.nums[1]} = ${p.answer}`,
+    op: p.op,
+    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    correct,
+  };
+  historyLog.unshift(entry);
+  renderHistory();
+}
+
+function renderHistory() {
+  const container = document.getElementById('historyLines');
+  if (!historyLog.length) {
+    container.innerHTML = '<div style="color:var(--muted);font-style:italic;font-size:0.9rem">No problems answered yet.</div>';
+    return;
+  }
+  container.innerHTML = historyLog.map((e, i) => `
+    <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);${i === 0 ? 'border-top:1px solid rgba(255,255,255,0.05)' : ''}">
+      <div style="flex-shrink:0;width:32px;height:32px;border-radius:50%;background:${opColors[e.op]};display:flex;align-items:center;justify-content:center;font-size:0.9rem;font-weight:900;color:var(--bg);font-family:'Cinzel',serif">${e.op}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-family:'Space Mono',monospace;font-size:0.9rem;color:var(--green);font-weight:700">${e.equation}</div>
+        <div style="font-size:0.78rem;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.text}</div>
+      </div>
+      <div style="flex-shrink:0;font-size:0.72rem;color:var(--muted);font-family:'Space Mono',monospace;padding-top:2px">${e.time}</div>
+    </div>
+  `).join('');
+}
+
+function clearHistory() {
+  historyLog.length = 0;
+  renderHistory();
+}
+
+function showSuccess() {
+  const p = currentProblem;
+  const area = document.getElementById('successArea');
+  const bonusMsg = streak >= 3 ? ` <span style="color:var(--accent)">🔥 Streak bonus: +5 House Points!</span>` : '';
+  area.style.display = 'block';
+  area.innerHTML = `
+    <div class="success-banner">
+      <div style="font-size:2rem;margin-bottom:10px">🧙‍✨</div>
+      <div class="score">${p.nums[0]} ${p.op} ${p.nums[1]} = ${p.answer}</div>
+      <div class="msg">Spell successfully cast! ${bonusMsg}</div>
+      <div style="margin-top:16px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button class="step-btn" onclick="nextProblem()">Next Challenge →</button>
+      </div>
+    </div>`;
+  area.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function nextProblem() {
+  loadProblem();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function skipProblem() {
+  streak = 0;
+  updateProgress();
+  loadProblem();
+}
+
+// =============================================
+// MULTI-STEP PROBLEMS DATA
+// =============================================
+const MS_PROBLEMS = [
+  {
+    id: 'ms1',
+    text: "Madam Pomfrey is preparing Healing Potions for the Hospital Wing. She can brew <key>48</key> doses of Healing Potion in <key>6</key> hours. Each dose costs <key>3</key> Galleons worth of ingredients. Madam Pomfrey has a budget of <key>100</key> Galleons. How much more does she need?",
+    parts: [
+      {
+        label: 'Part (a)',
+        question: "How many doses of Healing Potion does Madam Pomfrey brew per hour?",
+        explain: "Find the rate per hour. She brews 48 doses across 6 hours.",
+        hint_op: "You are distributing 48 doses equally across 6 hours. The equation is: 48 ÷ 6 = ?",
+        hint_solve: "48 ÷ 6: think 6 × ? = 48. Since 6 × 8 = 48, the answer is 8.",
+        op: '÷', nums: [48, 6], answer: 8,
+        answerSentence: "Madam Pomfrey brews ___ doses per hour.",
+        icon: '🧪', groupLabels: ['Total doses', 'Hours'],
+      },
+      {
+        label: 'Part (b)',
+        question: "How many Galleons does it cost to brew one full hour's worth of potions?",
+        explain: "She brews 8 doses per hour (from Part a), and each dose costs 3 Galleons.",
+        hint_op: "You have 8 doses and each costs 3 Galleons. The equation is: 8 × 3 = ?",
+        hint_solve: "8 × 3 = 24 Galleons per hour.",
+        op: '×', nums: [8, 3], answer: 24,
+        answerSentence: "One hour of brewing costs ___ Galleons.",
+        icon: '🪙', groupLabels: ['Dose 1','Dose 2','Dose 3','Dose 4','Dose 5','Dose 6','Dose 7','Dose 8'],
+      },
+      {
+        label: 'Part (c)',
+        question: "Madam Pomfrey has a budget of 100 Galleons. How much more does she need to cover one hour of brewing?",
+        explain: "One hour costs 24 Galleons (from Part b). Her budget is 100 Galleons. Find the shortfall.",
+        hint_op: "Shortfall = cost − budget = 24 − 100? Wait — is the cost MORE than the budget? Compare first. The equation is: 100 − 24 = ?",
+        hint_solve: "100 − 24 = 76. Her budget actually covers it! She has 76 Galleons left over.",
+        op: '-', nums: [100, 24], answer: 76,
+        answerSentence: "Madam Pomfrey has ___ Galleons remaining after one hour of brewing.",
+        icon: '💰', groupLabels: ['Budget', 'Cost'],
+      },
+    ],
+  },
+  {
+    id: 'ms2',
+    text: "Hagrid is feeding magical creatures. He has <key>3</key> Hippogriffs and <key>4</key> Nifflers to feed each day. Hippogriffs each eat <key>6</key> ferrets a day. Nifflers each eat <key>3</key> grubs a day. How many food items does Hagrid need to prepare in total each day?",
+    parts: [
+      {
+        label: 'Part (a)',
+        question: "How many ferrets does Hagrid need each day for all the Hippogriffs?",
+        explain: "You have 3 Hippogriffs and each eats 6 ferrets. Find the total ferrets needed.",
+        hint_op: "You have 3 equal groups of 6. The equation is: 3 × 6 = ?",
+        hint_solve: "3 × 6 = 18 ferrets.",
+        op: '×', nums: [3, 6], answer: 18,
+        answerSentence: "Hagrid needs ___ ferrets for the Hippogriffs.",
+        icon: '🦅', groupLabels: ['Hippogriff 1','Hippogriff 2','Hippogriff 3'],
+      },
+      {
+        label: 'Part (b)',
+        question: "How many grubs does Hagrid need each day for all the Nifflers?",
+        explain: "You have 4 Nifflers and each eats 3 grubs. Find the total grubs needed.",
+        hint_op: "You have 4 equal groups of 3. The equation is: 4 × 3 = ?",
+        hint_solve: "4 × 3 = 12 grubs.",
+        op: '×', nums: [4, 3], answer: 12,
+        answerSentence: "Hagrid needs ___ grubs for the Nifflers.",
+        icon: '🐾', groupLabels: ['Niffler 1','Niffler 2','Niffler 3','Niffler 4'],
+      },
+      {
+        label: 'Part (c)',
+        question: "How many food items does Hagrid need to prepare in total each day?",
+        explain: "You found the ferrets needed in (a) and the grubs in (b). Now combine both totals.",
+        hint_op: "Total food = ferrets + grubs = 18 + 12 = ?",
+        hint_solve: "18 + 12 = 30 food items total.",
+        op: '+', nums: [18, 12], answer: 30,
+        answerSentence: "Hagrid needs ___ food items in total each day.",
+        icon: '🍖', groupLabels: ['Ferrets', 'Grubs'],
+      },
+    ],
+  },
+  {
+    id: 'ms3',
+    text: "The Hogwarts Express carries students to school. The train has <key>8</key> carriages. Each carriage seats <key>24</key> students. This year <key>163</key> students are returning students.",
+    parts: [
+      {
+        label: 'Part (a)',
+        question: "How many students can the Hogwarts Express carry in total?",
+        explain: "Find the total capacity. There are 8 carriages and each one seats exactly 24 students.",
+        hint_op: "You have 8 equal groups of 24. The equation is: 8 × 24 = ?",
+        hint_solve: "8 × 24: use 8 × 20 = 160, then 8 × 4 = 32. Total: 160 + 32 = 192.",
+        op: '×', nums: [8, 24], answer: 192,
+        breakdown: true,
+        answerSentence: "The Hogwarts Express can carry ___ students in total.",
+        icon: '🚂', groupLabels: ['Car 1','Car 2','Car 3','Car 4','Car 5','Car 6','Car 7','Car 8'],
+      },
+      {
+        label: 'Part (b)',
+        question: "How many of the seats will be taken by new first-year students if the total capacity is filled?",
+        explain: "The train fits 192 students total and 163 are returning. The rest must be new first-years.",
+        hint_op: "New students = total capacity − returning students = 192 − 163 = ?",
+        hint_solve: "192 − 163: think 192 − 160 = 32, then 32 − 3 = 29.",
+        op: '-', nums: [192, 163], answer: 29,
+        answerSentence: "___ seats will be taken by new first-year students.",
+        icon: '🎓', groupLabels: ['Total seats', 'Returning students'],
+      },
+    ],
+  },
+  {
+    id: 'ms4',
+    text: "Diagon Alley has <key>5</key> wand shops. Each shop stocks <key>18</key> wand types. Harry buys one wand and Hermione buys <key>3</key> wands as spares. How many wand types are left available across all shops combined?",
+    parts: [
+      {
+        label: 'Part (a)',
+        question: "How many wand types are stocked across all 5 shops combined?",
+        explain: "Each of the 5 shops stocks 18 wand types. Multiply to find the total across all shops.",
+        hint_op: "Total = shops × wand types per shop = 5 × 18 = ?",
+        hint_solve: "5 × 18: split into 5 × 10 + 5 × 8 = 50 + 40 = 90.",
+        op: '×', nums: [5, 18], answer: 90,
+        answerSentence: "There are ___ wand types stocked in total.",
+        icon: '🪄', groupLabels: ['Shop 1','Shop 2','Shop 3','Shop 4','Shop 5'],
+      },
+      {
+        label: 'Part (b)',
+        question: "Harry and Hermione buy wands (1 + 3 = 4 total). How many wand types remain across all shops?",
+        explain: "From the 90 total wand types, Harry and Hermione between them buy 4 wands. Subtract.",
+        hint_op: "Remaining = total − purchased = 90 − 4 = ?",
+        hint_solve: "90 − 4 = 86.",
+        op: '-', nums: [90, 4], answer: 86,
+        answerSentence: "___ wand types remain available across all shops.",
+        icon: '✨', groupLabels: ['Total wands', 'Purchased'],
+      },
+    ],
+  },
+  {
+    id: 'ms5',
+    text: "The Hogwarts kitchens bake <key>15</key> batches of pumpkin pasties every morning. Each batch makes <key>24</key> pasties. After the feast, <key>87</key> pasties are left over. How many pasties were eaten?",
+    parts: [
+      {
+        label: 'Part (a)',
+        question: "How many pumpkin pasties are baked in total each morning?",
+        explain: "15 batches, each making 24 pasties. Equal groups — multiply.",
+        hint_op: "Total pasties = batches × per batch = 15 × 24 = ?",
+        hint_solve: "15 × 24: 15 × 20 = 300, 15 × 4 = 60. 300 + 60 = 360.",
+        op: '×', nums: [15, 24], answer: 360,
+        breakdown: true,
+        answerSentence: "The kitchens bake ___ pasties in total.",
+        icon: '🥧', groupLabels: Array.from({length:15}, (_,i)=>`Batch ${i+1}`),
+      },
+      {
+        label: 'Part (b)',
+        question: "If 87 pasties are left after the feast, how many were eaten?",
+        explain: "360 were made, 87 remain. Eaten = total − leftover.",
+        hint_op: "Eaten = total baked − leftover = 360 − 87 = ?",
+        hint_solve: "360 − 87: 360 − 80 = 280, 280 − 7 = 273.",
+        op: '-', nums: [360, 87], answer: 273,
+        answerSentence: "___ pasties were eaten at the feast.",
+        icon: '🍽️', groupLabels: ['Total baked', 'Left over'],
+      },
+    ],
+  },
+  {
+    id: 'ms6',
+    text: "Gringotts Bank has <key>9</key> vaults on Level 3, each holding <key>450</key> Galleons. A dragon guarding the vaults accidentally melts coins in <key>3</key> of the vaults, destroying <key>120</key> Galleons from each. How many Galleons survive in Level 3 overall?",
+    parts: [
+      {
+        label: 'Part (a)',
+        question: "How many Galleons are stored on Level 3 before the dragon incident?",
+        explain: "9 vaults each holding 450 Galleons. Multiply for the total.",
+        hint_op: "Total = vaults × Galleons per vault = 9 × 450 = ?",
+        hint_solve: "9 × 450: 9 × 400 = 3600, 9 × 50 = 450. 3600 + 450 = 4050.",
+        op: '×', nums: [9, 450], answer: 4050,
+        answerSentence: "Level 3 holds ___ Galleons in total.",
+        icon: '💰', groupLabels: Array.from({length:9}, (_,i)=>`Vault ${i+1}`),
+      },
+      {
+        label: 'Part (b)',
+        question: "The dragon destroys 120 Galleons in each of 3 vaults. How many Galleons are destroyed in total?",
+        explain: "3 vaults, 120 Galleons destroyed in each. Multiply.",
+        hint_op: "Destroyed = vaults affected × Galleons lost each = 3 × 120 = ?",
+        hint_solve: "3 × 120 = 360.",
+        op: '×', nums: [3, 120], answer: 360,
+        answerSentence: "___ Galleons are destroyed by the dragon.",
+        icon: '🐉', groupLabels: ['Vault A', 'Vault B', 'Vault C'],
+      },
+      {
+        label: 'Part (c)',
+        question: "How many Galleons survive on Level 3 after the dragon's rampage?",
+        explain: "4050 total minus 360 destroyed.",
+        hint_op: "Surviving = 4050 − 360 = ?",
+        hint_solve: "4050 − 360: 4050 − 400 = 3650, then + 40 = 3690.",
+        op: '-', nums: [4050, 360], answer: 3690,
+        answerSentence: "___ Galleons survive on Level 3.",
+        icon: '🏦', groupLabels: ['Total Galleons', 'Destroyed'],
+      },
+    ],
+  },
+];
+// ADVANCED PROBLEMS DATA
+// =============================================
+// Each problem defines:
+//   vars: [{sym, label, color}]  — named variables shown at top
+//   sections: named phases (Setup, Solve, Find, Verify)
+//     each section has lines: algebra shown left→right
+//       line has segments: {text} or {blank: id, answer, width}
+//       after all blanks in a section are correct, next section unlocks
+const ADV_PROBLEMS = [
+  {
+    id: 'adv1',
+    icon: '🧥',
+    text: "Madam Malkin's robe shop sells robes in two styles: <key>Standard</key> for <key>7</key> Galleons and <key>Deluxe</key> for <key>12</key> Galleons. One morning the shop sold <key>10</key> robes and took in <key>90</key> Galleons. How many of each style were sold?",
+    vars: [
+      { sym: 'S', label: 'Standard robes sold', color: 'var(--accent)' },
+      { sym: 'D', label: 'Deluxe robes sold',   color: 'var(--teal)'   },
+    ],
+    sections: [
+      {
+        id: 'setup',
+        title: 'Step 1: Write the equations',
+        instruction: 'Translate the two facts from the problem into equations. Fill in every blank.',
+        groups: [
+          {
+            label: 'Total robes:',
+            lines: [
+              [
+                { text: 'S + D =' },
+                { blank: 'adv1_eq1', answer: 10, width: 56, hint: 'How many robes total?' },
+              ]
+            ],
+          },
+          {
+            label: 'Total Galleons:',
+            lines: [
+              [
+                { blank: 'adv1_eq2a', answer: 7,  width: 48, hint: 'Price per Standard robe' },
+                { text: 'S +' },
+                { blank: 'adv1_eq2b', answer: 12, width: 48, hint: 'Price per Deluxe robe' },
+                { text: 'D =' },
+                { blank: 'adv1_eq2c', answer: 90, width: 56, hint: 'Total Galleons taken in' },
+              ]
+            ],
+          },
+        ],
+      },
+      {
+        id: 'solve',
+        title: 'Step 2: Solve the system',
+        instruction: 'Rearrange Equation 1 for S, then substitute into Equation 2 and simplify.',
+        groups: [
+          {
+            label: 'From the first equation:',
+            lines: [
+              [{ text: 'S = 10 − D' }],
+            ],
+          },
+          {
+            label: 'Substitute into the second equation:',
+            lines: [
+              [
+                { blank: 'adv1_s1', answer: 7, width: 44, hint: 'Coefficient of S from Eq 2' },
+                { text: '(10 − D) +' },
+                { blank: 'adv1_s2', answer: 12, width: 44, hint: 'Coefficient of D from Eq 2' },
+                { text: 'D = 90' },
+              ],
+              [
+                { blank: 'adv1_s3', answer: 70, width: 56, hint: '7 × 10 = ?' },
+                { text: '− 7D + 12D = 90' },
+              ],
+              [
+                { blank: 'adv1_s4', answer: 70, width: 56, hint: 'Constant stays the same' },
+                { text: '+' },
+                { blank: 'adv1_s5', answer: 5, width: 44, hint: '12 − 7 = ?' },
+                { text: 'D = 90' },
+              ],
+              [
+                { blank: 'adv1_s6', answer: 5, width: 44, hint: 'Same coefficient as above' },
+                { text: 'D =' },
+                { blank: 'adv1_s7', answer: 20, width: 56, hint: '90 − 70 = ?' },
+              ],
+            ],
+          },
+        ],
+      },
+      {
+        id: 'find',
+        title: 'Step 3: Find D and S',
+        instruction: 'Divide to find D, then substitute back to find S.',
+        groups: [
+          {
+            label: 'Solve for D:',
+            lines: [
+              [
+                { text: 'D = 20 ÷ 5 =' },
+                { blank: 'adv1_d', answer: 4, width: 56, hint: '20 ÷ 5 = ?' },
+              ],
+            ],
+          },
+          {
+            label: 'Substitute back to find S:',
+            lines: [
+              [
+                { text: 'S = 10 − D = 10 −' },
+                { blank: 'adv1_s_sub', answer: 4, width: 44, hint: 'The value of D you just found' },
+                { text: '=' },
+                { blank: 'adv1_s_ans', answer: 6, width: 56, hint: '10 − 4 = ?' },
+              ],
+            ],
+          },
+        ],
+      },
+      {
+        id: 'verify',
+        title: 'Final Answer — Verify',
+        instruction: 'Check both equations hold with S = 6 and D = 4.',
+        groups: [
+          {
+            label: 'Check Eq 1:',
+            lines: [
+              [
+                { text: 'S + D = 6 + 4 =' },
+                { blank: 'adv1_v1', answer: 10, width: 56, hint: '6 + 4 = ?' },
+                { text: '✓ (should be 10)' },
+              ],
+            ],
+          },
+          {
+            label: 'Check Eq 2:',
+            lines: [
+              [
+                { text: '7(6) + 12(4) = 42 + 48 =' },
+                { blank: 'adv1_v2', answer: 90, width: 56, hint: '42 + 48 = ?' },
+                { text: '✓ (should be 90)' },
+              ],
+            ],
+          },
+        ],
+      },
+    ],
+    finalAnswer: 'Madam Malkin sold <strong>6 Standard</strong> robes and <strong>4 Deluxe</strong> robes.',
+  },
+
+  {
+    id: 'adv2',
+    icon: '⭐',
+    text: "Professor Flitwick has <key>60</key> House Points to award. Gryffindor should receive <key>3</key> times as many points as Ravenclaw. How many points does each house receive?",
+    vars: [
+      { sym: 'G', label: "Gryffindor's points", color: 'var(--accent)'  },
+      { sym: 'R', label: "Ravenclaw's points",  color: 'var(--teal)'    },
+    ],
+    sections: [
+      {
+        id: 'setup',
+        title: 'Step 1: Write the equations',
+        instruction: 'Two facts are in the problem. Translate each into an equation.',
+        groups: [
+          {
+            label: 'Total points:',
+            lines: [
+              [
+                { text: 'G + R =' },
+                { blank: 'adv2_eq1', answer: 60, width: 56, hint: 'Total House Points to award' },
+              ],
+            ],
+          },
+          {
+            label: 'Gryffindor gets 3× Ravenclaw:',
+            lines: [
+              [
+                { text: 'G =' },
+                { blank: 'adv2_eq2a', answer: 3, width: 44, hint: 'How many times more does Gryffindor get?' },
+                { text: 'R' },
+              ],
+            ],
+          },
+        ],
+      },
+      {
+        id: 'solve',
+        title: 'Step 2: Solve the system',
+        instruction: 'Substitute G = 3R into the first equation and simplify.',
+        groups: [
+          {
+            label: 'Substitute G = 3R into Eq 1:',
+            lines: [
+              [
+                { blank: 'adv2_s1', answer: 3, width: 44, hint: 'Same coefficient from G = 3R' },
+                { text: 'R + R = 60' },
+              ],
+              [
+                { blank: 'adv2_s2', answer: 4, width: 44, hint: '3R + 1R = ?R' },
+                { text: 'R = 60' },
+              ],
+            ],
+          },
+          {
+            label: 'Solve for R:',
+            lines: [
+              [
+                { text: 'R = 60 ÷' },
+                { blank: 'adv2_s3', answer: 4, width: 44, hint: 'Divide by the coefficient' },
+                { text: '=' },
+                { blank: 'adv2_s4', answer: 15, width: 56, hint: '60 ÷ 4 = ?' },
+              ],
+            ],
+          },
+        ],
+      },
+      {
+        id: 'find',
+        title: 'Step 3: Find G',
+        instruction: 'Now substitute R back into G = 3R.',
+        groups: [
+          {
+            label: 'Substitute back:',
+            lines: [
+              [
+                { text: 'G = 3 ×' },
+                { blank: 'adv2_g1', answer: 15, width: 56, hint: 'The value of R you just found' },
+                { text: '=' },
+                { blank: 'adv2_g2', answer: 45, width: 56, hint: '3 × 15 = ?' },
+              ],
+            ],
+          },
+        ],
+      },
+      {
+        id: 'verify',
+        title: 'Final Answer — Verify',
+        instruction: 'Check with G = 45 and R = 15.',
+        groups: [
+          {
+            label: 'Check Eq 1:',
+            lines: [
+              [
+                { text: 'G + R = 45 + 15 =' },
+                { blank: 'adv2_v1', answer: 60, width: 56, hint: '45 + 15 = ?' },
+                { text: '✓ (should be 60)' },
+              ],
+            ],
+          },
+          {
+            label: 'Check Eq 2:',
+            lines: [
+              [
+                { text: 'G = 3R → 45 = 3 × 15 =' },
+                { blank: 'adv2_v2', answer: 45, width: 56, hint: '3 × 15 = ?' },
+                { text: '✓' },
+              ],
+            ],
+          },
+        ],
+      },
+    ],
+    finalAnswer: '<strong>Gryffindor receives 45 points</strong> and <strong>Ravenclaw receives 15 points</strong>.',
+  },
+
+  {
+    id: 'adv3',
+    icon: '🍫',
+    text: "Honeydukes sells Chocolate Frogs for <key>3</key> Knuts each and Bertie Bott's Every Flavour Beans for <key>5</key> Knuts each. Ron spent exactly <key>27</key> Knuts and bought <key>7</key> items. How many of each did he buy?",
+    vars: [
+      { sym: 'x', label: 'Chocolate Frogs (3 Knuts each)',               color: 'var(--accent)' },
+      { sym: 'y', label: "Bertie Bott's Every Flavour Beans (5 Knuts each)", color: 'var(--teal)'   },
+    ],
+    sections: [
+      {
+        id: 'setup',
+        title: 'Step 1: Write the equations',
+        instruction: 'Translate the two facts from the problem into equations.',
+        groups: [
+          {
+            label: 'Total items:',
+            lines: [
+              [
+                { text: 'x + y =' },
+                { blank: 'adv3_eq1', answer: 7, width: 56, hint: 'How many items total?' },
+              ],
+            ],
+          },
+          {
+            label: 'Total cost:',
+            lines: [
+              [
+                { blank: 'adv3_eq2a', answer: 3, width: 44, hint: 'Cost per Chocolate Frog' },
+                { text: 'x +' },
+                { blank: 'adv3_eq2b', answer: 5, width: 44, hint: "Cost per Bertie Bott's bag" },
+                { text: 'y =' },
+                { blank: 'adv3_eq2c', answer: 27, width: 56, hint: 'Total Knuts spent' },
+              ],
+            ],
+          },
+        ],
+      },
+      {
+        id: 'solve',
+        title: 'Step 2: Solve the system',
+        instruction: 'Rearrange Eq 1 for x, substitute into Eq 2, and simplify.',
+        groups: [
+          {
+            label: 'From the first equation:',
+            lines: [
+              [{ text: 'x = 7 − y' }],
+            ],
+          },
+          {
+            label: 'Substitute into the second equation:',
+            lines: [
+              [
+                { blank: 'adv3_s1', answer: 3, width: 44, hint: 'Coefficient of x from Eq 2' },
+                { text: '(7 − y) +' },
+                { blank: 'adv3_s2', answer: 5, width: 44, hint: 'Coefficient of y from Eq 2' },
+                { text: 'y = 27' },
+              ],
+              [
+                { blank: 'adv3_s3', answer: 21, width: 56, hint: '3 × 7 = ?' },
+                { text: '− 3y + 5y = 27' },
+              ],
+              [
+                { blank: 'adv3_s4', answer: 21, width: 56, hint: 'Constant stays the same' },
+                { text: '+' },
+                { blank: 'adv3_s5', answer: 2, width: 44, hint: '5 − 3 = ?' },
+                { text: 'y = 27' },
+              ],
+              [
+                { blank: 'adv3_s6', answer: 2, width: 44, hint: 'Same coefficient' },
+                { text: 'y =' },
+                { blank: 'adv3_s7', answer: 6, width: 44, hint: '27 − 21 = ?' },
+              ],
+            ],
+          },
+        ],
+      },
+      {
+        id: 'find',
+        title: 'Step 3: Find x',
+        instruction: 'Divide to find y, then substitute back.',
+        groups: [
+          {
+            label: 'Solve for y:',
+            lines: [
+              [
+                { text: 'y = 6 ÷ 2 =' },
+                { blank: 'adv3_y', answer: 3, width: 56, hint: '6 ÷ 2 = ?' },
+              ],
+            ],
+          },
+          {
+            label: 'Substitute back:',
+            lines: [
+              [
+                { text: 'x = 7 − y = 7 −' },
+                { blank: 'adv3_x1', answer: 3, width: 44, hint: 'The value of y you just found' },
+                { text: '=' },
+                { blank: 'adv3_x2', answer: 4, width: 56, hint: '7 − 3 = ?' },
+              ],
+            ],
+          },
+        ],
+      },
+      {
+        id: 'verify',
+        title: 'Final Answer — Verify',
+        instruction: 'Check both equations with x = 4 and y = 3.',
+        groups: [
+          {
+            label: 'Check Eq 1:',
+            lines: [
+              [
+                { text: 'x + y = 4 + 3 =' },
+                { blank: 'adv3_v1', answer: 7, width: 56, hint: '4 + 3 = ?' },
+                { text: '✓ (should be 7)' },
+              ],
+            ],
+          },
+          {
+            label: 'Check Eq 2:',
+            lines: [
+              [
+                { text: '3(4) + 5(3) = 12 + 15 =' },
+                { blank: 'adv3_v2', answer: 27, width: 56, hint: '12 + 15 = ?' },
+                { text: '✓ (should be 27)' },
+              ],
+            ],
+          },
+        ],
+      },
+    ],
+    finalAnswer: 'Ron bought <strong>4 Chocolate Frogs</strong> and <strong>3 Bertie Bott\'s bags</strong>.',
+  },
+
+  {
+    id: 'adv4',
+    icon: '🧹',
+    text: "Harry and Draco each fly laps around the Quidditch pitch. Harry flies <key>5</key> laps more than Draco. Together they fly <key>23</key> laps. How many laps does each fly?",
+    vars: [
+      { sym: 'H', label: "Harry's laps",  color: 'var(--accent)' },
+      { sym: 'D', label: "Draco's laps",  color: 'var(--teal)'   },
+    ],
+    sections: [
+      {
+        id: 'setup',
+        title: 'Step 1: Write the equations',
+        instruction: 'Two facts connect H and D. Write both equations.',
+        groups: [
+          {
+            label: 'Total laps flown:',
+            lines: [
+              [
+                { text: 'H + D =' },
+                { blank: 'adv4_eq1', answer: 23, width: 56, hint: 'Total laps between them' },
+              ],
+            ],
+          },
+          {
+            label: 'Harry flies 5 more than Draco:',
+            lines: [
+              [
+                { text: 'H = D +' },
+                { blank: 'adv4_eq2', answer: 5, width: 44, hint: 'How many more laps does Harry fly?' },
+              ],
+            ],
+          },
+        ],
+      },
+      {
+        id: 'solve',
+        title: 'Step 2: Solve the system',
+        instruction: 'Substitute H = D + 5 into Eq 1 and simplify.',
+        groups: [
+          {
+            label: 'Substitute into Eq 1:',
+            lines: [
+              [
+                { text: '(D +' },
+                { blank: 'adv4_s1', answer: 5, width: 44, hint: 'Same number from H = D + 5' },
+                { text: ') + D = 23' },
+              ],
+              [
+                { blank: 'adv4_s2', answer: 2, width: 44, hint: '1D + 1D = ?D' },
+                { text: 'D +' },
+                { blank: 'adv4_s3', answer: 5, width: 44, hint: 'Constant from the substitution' },
+                { text: '= 23' },
+              ],
+              [
+                { blank: 'adv4_s4', answer: 2, width: 44, hint: 'Same coefficient' },
+                { text: 'D =' },
+                { blank: 'adv4_s5', answer: 18, width: 56, hint: '23 − 5 = ?' },
+              ],
+            ],
+          },
+        ],
+      },
+      {
+        id: 'find',
+        title: 'Step 3: Find H',
+        instruction: 'Divide to find D, then substitute back to find H.',
+        groups: [
+          {
+            label: 'Solve for D:',
+            lines: [
+              [
+                { text: 'D = 18 ÷ 2 =' },
+                { blank: 'adv4_d', answer: 9, width: 56, hint: '18 ÷ 2 = ?' },
+              ],
+            ],
+          },
+          {
+            label: 'Substitute back to find H:',
+            lines: [
+              [
+                { text: 'H = D + 5 =' },
+                { blank: 'adv4_h1', answer: 9, width: 44, hint: "Draco's laps" },
+                { text: '+ 5 =' },
+                { blank: 'adv4_h2', answer: 14, width: 56, hint: '9 + 5 = ?' },
+              ],
+            ],
+          },
+        ],
+      },
+      {
+        id: 'verify',
+        title: 'Final Answer — Verify',
+        instruction: 'Check both equations with H = 14 and D = 9.',
+        groups: [
+          {
+            label: 'Check Eq 1 (total laps):',
+            lines: [
+              [
+                { text: 'H + D = 14 + 9 =' },
+                { blank: 'adv4_v1', answer: 23, width: 56, hint: '14 + 9 = ?' },
+                { text: '✓ (should be 23)' },
+              ],
+            ],
+          },
+          {
+            label: 'Check Eq 2 (difference):',
+            lines: [
+              [
+                { text: 'H − D = 14 − 9 =' },
+                { blank: 'adv4_v2', answer: 5, width: 56, hint: '14 − 9 = ?' },
+                { text: '✓ (should be 5)' },
+              ],
+            ],
+          },
+        ],
+      },
+    ],
+    finalAnswer: '<strong>Harry flew 14 laps</strong> and <strong>Draco flew 9 laps</strong>.',
+  },
+
+  {
+    id: 'adv5',
+    icon: '🦉',
+    text: "The Owlery has two types of owl: <key>Barn Owls</key> and <key>Tawny Owls</key>. There are <key>30</key> owls in total. Barn owls eat <key>4</key> mice a day, tawny owls eat <key>3</key> mice a day, and together they eat <key>104</key> mice per day. How many of each type are there?",
+    vars: [
+      { sym: 'B', label: 'Barn Owls (4 mice/day)',  color: 'var(--accent)' },
+      { sym: 'T', label: 'Tawny Owls (3 mice/day)', color: 'var(--teal)'   },
+    ],
+    sections: [
+      {
+        id: 'setup',
+        title: 'Step 1: Write the equations',
+        instruction: 'Write one equation for total owls and one for total mice eaten.',
+        groups: [
+          {
+            label: 'Total owls:',
+            lines: [
+              [
+                { text: 'B + T =' },
+                { blank: 'adv5_eq1', answer: 30, width: 56, hint: 'Total number of owls' },
+              ],
+            ],
+          },
+          {
+            label: 'Total mice eaten per day:',
+            lines: [
+              [
+                { blank: 'adv5_eq2a', answer: 4, width: 44, hint: 'Mice per Barn Owl' },
+                { text: 'B +' },
+                { blank: 'adv5_eq2b', answer: 3, width: 44, hint: 'Mice per Tawny Owl' },
+                { text: 'T =' },
+                { blank: 'adv5_eq2c', answer: 104, width: 64, hint: 'Total mice eaten per day' },
+              ],
+            ],
+          },
+        ],
+      },
+      {
+        id: 'solve',
+        title: 'Step 2: Solve the system',
+        instruction: 'Rearrange Eq 1 for B, substitute into Eq 2, and simplify.',
+        groups: [
+          {
+            label: 'From the first equation:',
+            lines: [
+              [{ text: 'B = 30 − T' }],
+            ],
+          },
+          {
+            label: 'Substitute into the second equation:',
+            lines: [
+              [
+                { blank: 'adv5_s1', answer: 4, width: 44, hint: 'Coefficient of B from Eq 2' },
+                { text: '(30 − T) +' },
+                { blank: 'adv5_s2', answer: 3, width: 44, hint: 'Coefficient of T from Eq 2' },
+                { text: 'T = 104' },
+              ],
+              [
+                { blank: 'adv5_s3', answer: 120, width: 64, hint: '4 × 30 = ?' },
+                { text: '− 4T + 3T = 104' },
+              ],
+              [
+                { blank: 'adv5_s4', answer: 120, width: 64, hint: 'Constant stays the same' },
+                { text: '−' },
+                { blank: 'adv5_s5', answer: 1, width: 44, hint: '4 − 3 = ?' },
+                { text: 'T = 104' },
+              ],
+              [
+                { text: '−' },
+                { blank: 'adv5_s6', answer: 1, width: 44, hint: 'Same coefficient' },
+                { text: 'T =' },
+                { blank: 'adv5_s7', answer: -16, width: 56, hint: '104 − 120 = ?' },
+              ],
+              [
+                { blank: 'adv5_s8', answer: 1, width: 44, hint: 'Coefficient of T' },
+                { text: 'T =' },
+                { blank: 'adv5_s9', answer: 16, width: 56, hint: 'Divide both sides by −1: −16 ÷ −1 = ?' },
+              ],
+            ],
+          },
+        ],
+      },
+      {
+        id: 'find',
+        title: 'Step 3: Find B',
+        instruction: 'Substitute T = 16 back into B = 30 − T.',
+        groups: [
+          {
+            label: 'Substitute back:',
+            lines: [
+              [
+                { text: 'B = 30 − T = 30 −' },
+                { blank: 'adv5_b1', answer: 16, width: 56, hint: 'The value of T you just found' },
+                { text: '=' },
+                { blank: 'adv5_b2', answer: 14, width: 56, hint: '30 − 16 = ?' },
+              ],
+            ],
+          },
+        ],
+      },
+      {
+        id: 'verify',
+        title: 'Final Answer — Verify',
+        instruction: 'Check both equations with B = 14 and T = 16.',
+        groups: [
+          {
+            label: 'Check Eq 1 (total owls):',
+            lines: [
+              [
+                { text: 'B + T = 14 + 16 =' },
+                { blank: 'adv5_v1', answer: 30, width: 56, hint: '14 + 16 = ?' },
+                { text: '✓ (should be 30)' },
+              ],
+            ],
+          },
+          {
+            label: 'Check Eq 2 (total mice):',
+            lines: [
+              [
+                { text: '4(14) + 3(16) = 56 + 48 =' },
+                { blank: 'adv5_v2', answer: 104, width: 64, hint: '56 + 48 = ?' },
+                { text: '✓ (should be 104)' },
+              ],
+            ],
+          },
+        ],
+      },
+    ],
+    finalAnswer: 'The Owlery has <strong>14 Barn Owls</strong> and <strong>16 Tawny Owls</strong>.',
+  },
+];
+
+// =============================================
+// ADVANCED ENGINE — worksheet style
+// =============================================
+let advIndex = 0;
+let advShuffle = [];
+let advBlankState = {}; // blankId → { answered: bool, correct: bool }
+let advSectionUnlocked = []; // [true, false, false, false]
+
+function advInit() {
+  advShuffle = fisherYates([...ADV_PROBLEMS]);
+  advIndex = 0;
+  advLoadProblem();
+}
+
+function advLoadProblem() {
+  if (advIndex >= advShuffle.length) {
+    const lastId = advShuffle[advIndex - 1]?.id;
+    advShuffle = fisherYates([...ADV_PROBLEMS]);
+    if (lastId && advShuffle[0].id === lastId && advShuffle.length > 1) {
+      [advShuffle[0], advShuffle[1]] = [advShuffle[1], advShuffle[0]];
+    }
+    advIndex = 0;
+  }
+  const p = advShuffle[advIndex];
+  advBlankState = {};
+  advSectionUnlocked = p.sections.map((_, i) => i === 0);
+
+  let text = p.text.replace(/<key>([^<]+)<\/key>/g, '<span class="key-num">$1</span>');
+  document.getElementById('advProblemText').innerHTML = text;
+  document.getElementById('advStartBtn').style.display = '';
+  document.getElementById('advSkipBtn').style.display = '';
+  document.getElementById('advCard').style.display = '';
+  document.getElementById('advWorksheetCard').style.display = 'none';
+  document.getElementById('advStepsContainer').innerHTML = '';
+}
+
+function advStart() {
+  document.getElementById('advStartBtn').style.display = 'none';
+  document.getElementById('advSkipBtn').style.display = 'none';
+  document.getElementById('advWorksheetCard').style.display = '';
+  advRenderWorksheet();
+}
+
+function advSkip() {
+  advIndex++;
+  advLoadProblem();
+}
+
+function advRenderWorksheet() {
+  const p = advShuffle[advIndex];
+  const container = document.getElementById('advStepsContainer');
+  container.innerHTML = '';
+  container.style.cssText = 'display:block;max-width:600px;margin:0 auto';
+
+  // ── "Let:" variable definitions ──────────────────────────────
+  const varPanel = document.createElement('div');
+  varPanel.style.cssText = `
+    padding:16px 0 20px 0;
+    border-bottom:1px solid var(--border);
+    margin-bottom:0;
+  `;
+  varPanel.innerHTML = `
+    <div style="font-size:0.95rem;color:var(--text);margin-bottom:10px;font-weight:600">Let:</div>
+    <ul style="margin:0;padding-left:22px;list-style:disc">
+      ${p.vars.map(v => `
+        <li style="margin-bottom:5px;color:#d4c49a;font-size:0.95rem;line-height:1.5">
+          <span style="font-family:'Space Mono',monospace;font-weight:700;color:${v.color}">${v.sym}</span>
+          = ${v.label}
+        </li>
+      `).join('')}
+    </ul>
+  `;
+  container.appendChild(varPanel);
+
+  // ── Sections ─────────────────────────────────────────────────
+  p.sections.forEach((section, si) => {
+    const isLast = si === p.sections.length - 1;
+    const locked = !advSectionUnlocked[si];
+
+    const sectionEl = document.createElement('div');
+    sectionEl.id = `advSection_${si}`;
+    sectionEl.style.cssText = `
+      border-bottom: 1px solid var(--border);
+      padding: 22px 0;
+      transition: opacity 0.5s, filter 0.5s;
+      ${locked ? 'opacity:0.25;pointer-events:none;filter:blur(2px)' : ''}
+    `;
+
+    // Section title — bold, left-aligned like screenshot
+    const titleEl = document.createElement('div');
+    titleEl.style.cssText = `
+      font-size:1rem;font-weight:700;color:var(--text);
+      margin-bottom:4px;
+    `;
+    titleEl.textContent = section.title;
+
+    // Instruction — lighter, smaller, italic
+    const instrEl = document.createElement('div');
+    instrEl.style.cssText = `
+      font-size:0.85rem;color:var(--muted);margin-bottom:18px;
+    `;
+    instrEl.textContent = section.instruction;
+
+    sectionEl.appendChild(titleEl);
+    sectionEl.appendChild(instrEl);
+
+    // Groups — each with a sub-label and algebra lines
+    section.groups.forEach(group => {
+      const groupEl = document.createElement('div');
+      groupEl.style.cssText = 'margin-bottom:18px';
+
+      // Sub-label (e.g. "Total items:", "Substitute into the second equation:")
+      const labelEl = document.createElement('div');
+      labelEl.style.cssText = `
+        font-size:0.88rem;color:var(--muted);
+        margin-bottom:8px;padding-left:2px;
+      `;
+      labelEl.textContent = group.label;
+      groupEl.appendChild(labelEl);
+
+      // Algebra lines — centered, prominent
+      group.lines.forEach(line => {
+        const lineEl = document.createElement('div');
+        lineEl.style.cssText = `
+          display:flex;align-items:center;justify-content:center;
+          gap:6px;flex-wrap:wrap;
+          font-family:'Space Mono',monospace;font-size:1.05rem;
+          color:var(--text);padding:5px 0;letter-spacing:0.02em;
+        `;
+
+        line.forEach(seg => {
+          if (seg.text !== undefined) {
+            const span = document.createElement('span');
+            span.style.cssText = 'color:#d4c49a;white-space:nowrap';
+            span.textContent = seg.text;
+            lineEl.appendChild(span);
+          } else {
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.className = 'eq-input';
+            input.id = `advBlank_${seg.blank}`;
+            input.placeholder = '?';
+            input.style.cssText = `
+              width:${seg.width || 56}px;
+              font-family:'Space Mono',monospace;
+              font-size:1rem;text-align:center;
+            `;
+            input.dataset.answer = seg.answer;
+            input.dataset.section = si;
+            if (seg.hint) input.dataset.hint = seg.hint;
+            input.addEventListener('keydown', e => {
+              if (e.key === 'Enter') advCheckSection(parseInt(input.dataset.section));
+            });
+            lineEl.appendChild(input);
+          }
+        });
+
+        groupEl.appendChild(lineEl);
+      });
+
+      sectionEl.appendChild(groupEl);
+    });
+
+    // Feedback + buttons
+    const fbEl = document.createElement('div');
+    fbEl.id = `advSectionFb_${si}`;
+    fbEl.style.cssText = 'font-size:0.88rem;min-height:20px;margin-top:6px;margin-bottom:10px;';
+    sectionEl.appendChild(fbEl);
+
+    const btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px';
+    btnRow.innerHTML = `
+      <button class="step-btn" id="advCheckBtn_${si}"
+        onclick="advCheckSection(${si})"
+        style="font-size:0.85rem;padding:8px 18px">
+        ${isLast ? '✓ Verify & Finish' : '✓ Check'}
+      </button>
+      <button class="hint-btn" id="advHintBtn_${si}"
+        onclick="advToggleSectionHint(${si})">
+        💡 Hints
+      </button>
+    `;
+    sectionEl.appendChild(btnRow);
+
+    // Hints panel
+    const hintEl = document.createElement('div');
+    hintEl.id = `advSectionHint_${si}`;
+    hintEl.style.cssText = `
+      display:none;margin-top:12px;padding:12px 16px;
+      background:rgba(245,200,66,0.07);
+      border:1px solid rgba(245,200,66,0.2);
+      border-radius:8px;font-size:0.88rem;color:#d4c49a;line-height:1.8;
+    `;
+    sectionEl.appendChild(hintEl);
+
+    container.appendChild(sectionEl);
+  });
+}
+
+function advGetSectionBlanks(si) {
+  const p = advShuffle[advIndex];
+  const section = p.sections[si];
+  const blanks = [];
+  section.groups.forEach(group => {
+    group.lines.forEach(line => {
+      line.forEach(seg => {
+        if (seg.blank !== undefined) blanks.push(seg);
+      });
+    });
+  });
+  return blanks;
+}
+
+function advToggleSectionHint(si) {
+  const p = advShuffle[advIndex];
+  const hintEl = document.getElementById(`advSectionHint_${si}`);
+  const blanks = advGetSectionBlanks(si);
+  hintEl.innerHTML = blanks.map(seg => {
+    const input = document.getElementById(`advBlank_${seg.blank}`);
+    const answered = input && input.classList.contains('correct');
+    return `<div style="margin-bottom:4px">• ${seg.hint}</div>`;
+  }).join('');
+  hintEl.style.display = hintEl.style.display === 'none' ? 'block' : 'none';
+  const btn = document.getElementById(`advHintBtn_${si}`);
+  if (btn) btn.textContent = hintEl.style.display === 'none' ? '💡 Show Hints' : '💡 Hide Hints';
+}
+
+function advCheckSection(si) {
+  const p = advShuffle[advIndex];
+  const blanks = advGetSectionBlanks(si);
+  let allCorrect = true;
+
+  blanks.forEach(seg => {
+    const input = document.getElementById(`advBlank_${seg.blank}`);
+    if (!input) return;
+    const val = parseInt(input.value, 10);
+    if (val === seg.answer) {
+      input.className = 'eq-input correct';
+      input.readOnly = true;
+    } else {
+      input.className = 'eq-input wrong';
+      allCorrect = false;
+      setTimeout(() => {
+        if (!input.classList.contains('correct')) input.className = 'eq-input';
+      }, 700);
+    }
+  });
+
+  const fb = document.getElementById(`advSectionFb_${si}`);
+  const isLast = si === p.sections.length - 1;
+
+  if (allCorrect) {
+    fb.innerHTML = `<span style="color:var(--green)">✓ Correct — ${isLast ? 'solution verified!' : 'moving on!'}</span>`;
+
+    const checkBtn = document.getElementById(`advCheckBtn_${si}`);
+    if (checkBtn) checkBtn.style.display = 'none';
+    const hintBtn = document.getElementById(`advHintBtn_${si}`);
+    if (hintBtn) hintBtn.style.display = 'none';
+
+    if (isLast) {
+      setTimeout(() => advShowSuccess(), 600);
+    } else {
+      // unlock next section
+      setTimeout(() => {
+        advSectionUnlocked[si + 1] = true;
+        const nextEl = document.getElementById(`advSection_${si + 1}`);
+        if (nextEl) {
+          nextEl.style.opacity = '1';
+          nextEl.style.pointerEvents = '';
+          nextEl.style.filter = '';
+          nextEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          // focus first blank in next section
+          const nextBlanks = advGetSectionBlanks(si + 1);
+          if (nextBlanks.length) {
+            const firstInput = document.getElementById(`advBlank_${nextBlanks[0].blank}`);
+            if (firstInput) setTimeout(() => firstInput.focus(), 400);
+          }
+        }
+      }, 600);
+    }
+  } else {
+    fb.innerHTML = `<span style="color:var(--accent3)">Some blanks aren't right — check the highlighted ones.</span>`;
+  }
+}
+
+function advShowSuccess() {
+  const p = advShuffle[advIndex];
+  const container = document.getElementById('advStepsContainer');
+
+  const banner = document.createElement('div');
+  banner.className = 'success-banner';
+  banner.innerHTML = `
+    <div style="font-size:2rem;margin-bottom:10px">🏆</div>
+    <div class="score">System Solved!</div>
+    <div style="font-size:1rem;color:var(--text);margin:10px 0 16px;line-height:1.7">${p.finalAnswer}</div>
+    <button class="step-btn" onclick="advIndex++;advLoadProblem()">Next Challenge →</button>
+  `;
+  container.appendChild(banner);
+  banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// =============================================
+// MULTI-STEP ENGINE
+// =============================================
+let msIndex = 0;
+let msPartIndex = 0;
+let msPartAnswers = [];
+let msShuffle = [];
+
+function msInit() {
+  msShuffle = fisherYates([...MS_PROBLEMS]);
+  msIndex = 0;
+  msLoadProblem();
+}
+
+function msLoadProblem() {
+  if (msIndex >= msShuffle.length) {
+    const lastId = msShuffle[msIndex - 1]?.id;
+    msShuffle = fisherYates([...MS_PROBLEMS]);
+    if (lastId && msShuffle[0].id === lastId && msShuffle.length > 1) {
+      [msShuffle[0], msShuffle[1]] = [msShuffle[1], msShuffle[0]];
+    }
+    msIndex = 0;
+  }
+  const p = msShuffle[msIndex];
+  msPartIndex = 0;
+  msPartAnswers = [];
+  let text = p.text.replace(/<key>([^<]+)<\/key>/g, '<span class="key-num">$1</span>');
+  document.getElementById('msProblemText').innerHTML = text;
+  document.getElementById('msStartBtn').style.display = '';
+  document.getElementById('msSkipBtn').style.display = '';
+  document.getElementById('msPartsContainer').style.display = 'none';
+  document.getElementById('msPartsContainer').innerHTML = '';
+}
+
+function msStart() {
+  document.getElementById('msStartBtn').style.display = 'none';
+  document.getElementById('msSkipBtn').style.display = 'none';
+  document.getElementById('msPartsContainer').style.display = 'flex';
+  msRenderPart(0);
+}
+
+function msSkip() {
+  msIndex++;
+  msLoadProblem();
+}
+
+function msRenderPart(partIdx) {
+  const p = msShuffle[msIndex];
+  const part = p.parts[partIdx];
+  const container = document.getElementById('msPartsContainer');
+
+  const card = document.createElement('div');
+  card.className = 'step-card step-active';
+  card.id = `msPart${partIdx}`;
+
+  const isMulti = part.op === 'multi';
+
+  card.innerHTML = `
+    <div class="step-header">
+      <div class="step-num">${String.fromCharCode(65 + partIdx)}</div>
+      <div>
+        <div class="step-title">${part.label}</div>
+        <div class="step-subtitle" style="font-style:italic;font-size:0.9rem;color:var(--text);margin-top:4px">${part.question}</div>
+      </div>
+    </div>
+    <div class="explanation" style="margin-bottom:12px">${part.explain}</div>
+    ${isMulti ? renderMultiSubSteps(part, partIdx) : renderSinglePartEq(part, partIdx)}
+    <div class="hint-box" id="msHint${partIdx}"><strong>Hint:</strong> ${part.hint_op}${part.hint_solve ? '<br><br><strong>How to solve:</strong> ' + part.hint_solve : ''}</div>
+    <div id="msFeedback${partIdx}" style="font-size:0.88rem;min-height:20px;margin-top:6px"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px">
+      ${isMulti ? `<button class="step-btn" onclick="msCheckMulti(${partIdx})">✓ Check All Steps</button>` : `<button class="step-btn" onclick="msCheckPart(${partIdx})">✓ Check Answer</button>`}
+      <button class="hint-btn" onclick="toggleHint('msHint${partIdx}')">💡 Hint</button>
+    </div>
+  `;
+  container.appendChild(card);
+  card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function renderSinglePartEq(part, idx) {
+  const breakdownBtn = part.breakdown
+    ? `<button class="hint-btn" id="breakdownBtn${idx}" onclick="renderBreakdown(${idx})" style="border-color:var(--accent);color:var(--accent)">🔬 Break it Down</button>`
+    : '';
+  return `
+    <div class="eq-builder" style="margin-bottom:10px">
+      <div class="eq-num-box">${part.nums[0]}</div>
+      <div class="eq-op">${part.op}</div>
+      <div class="eq-num-box">${part.nums[1]}</div>
+      <div class="eq-op">=</div>
+      <input class="eq-input" id="msInput${idx}" type="number" placeholder="?"
+        onkeydown="if(event.key==='Enter') msCheckPart(${idx})">
+    </div>
+    <div id="breakdownArea${idx}" style="margin-top:8px"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px">
+      ${breakdownBtn}
+    </div>
+    <div style="font-size:0.88rem;color:var(--muted);font-style:italic;margin-top:8px">${part.answerSentence.replace('___', '<span style="color:var(--accent)">?</span>')}</div>
+  `;
+}
+
+function renderMultiSubSteps(part, idx) {
+  return part.subSteps.map((s, si) => `
+    <div style="margin-bottom:12px;padding:12px;background:rgba(0,0,0,0.2);border-radius:8px;border:1px solid var(--border)">
+      <div style="font-family:'Cinzel',serif;font-size:0.75rem;color:var(--accent2);letter-spacing:1px;margin-bottom:8px">${s.label}</div>
+      <div style="font-size:0.9rem;color:var(--muted);margin-bottom:8px;font-style:italic">${s.explain}</div>
+      <div class="eq-builder" style="margin-bottom:0">
+        <div class="eq-num-box">${s.nums[0]}</div>
+        <div class="eq-op">${s.op}</div>
+        <div class="eq-num-box">${s.nums[1]}</div>
+        <div class="eq-op">=</div>
+        <input class="eq-input" id="msMultiInput${idx}_${si}" type="number" placeholder="?"
+          style="width:72px" onkeydown="if(event.key==='Enter') msCheckMulti(${idx})">
+      </div>
+    </div>
+  `).join('');
+}
+
+function msCheckPart(partIdx) {
+  const p = msShuffle[msIndex];
+  const part = p.parts[partIdx];
+  const input = document.getElementById(`msInput${partIdx}`);
+  const val = parseInt(input.value, 10);
+  const fb = document.getElementById(`msFeedback${partIdx}`);
+
+  if (isNaN(val)) { fb.innerHTML = '<span style="color:var(--accent3)">Please enter a number!</span>'; return; }
+
+  if (val === part.answer) {
+    input.className = 'eq-input correct';
+    fb.innerHTML = `<span style="color:var(--green)">✓ Correct! ${part.answerSentence.replace('___', '<strong>' + val + '</strong>')}</span>`;
+    document.getElementById(`msPart${partIdx}`).className = 'step-card step-done';
+    msPartAnswers[partIdx] = val;
+
+    setTimeout(() => {
+      if (partIdx + 1 < p.parts.length) {
+        msRenderPart(partIdx + 1);
+      } else {
+        msShowSuccess();
+      }
+    }, 900);
+  } else {
+    input.className = 'eq-input wrong';
+    setTimeout(() => { input.className = 'eq-input'; }, 600);
+    fb.innerHTML = `<span style="color:var(--accent3)">✗ Not quite — try again!</span>`;
+  }
+}
+
+function msCheckMulti(partIdx) {
+  const p = msShuffle[msIndex];
+  const part = p.parts[partIdx];
+  let allCorrect = true;
+  const fb = document.getElementById(`msFeedback${partIdx}`);
+
+  part.subSteps.forEach((s, si) => {
+    const input = document.getElementById(`msMultiInput${partIdx}_${si}`);
+    const val = parseInt(input.value, 10);
+    if (val === s.answer) {
+      input.className = 'eq-input correct';
+    } else {
+      input.className = 'eq-input wrong';
+      allCorrect = false;
+      setTimeout(() => { input.className = 'eq-input'; }, 700);
+    }
+  });
+
+  if (allCorrect) {
+    fb.innerHTML = `<span style="color:var(--green)">✓ All steps correct! ${part.answerSentence.replace('___', '<strong>' + part.answer + '</strong>')}</span>`;
+    document.getElementById(`msPart${partIdx}`).className = 'step-card step-done';
+    msPartAnswers[partIdx] = part.answer;
+    setTimeout(() => {
+      if (partIdx + 1 < p.parts.length) msRenderPart(partIdx + 1);
+      else msShowSuccess();
+    }, 900);
+  } else {
+    fb.innerHTML = `<span style="color:var(--accent3)">✗ Some steps aren't right yet — check the highlighted ones.</span>`;
+  }
+}
+
+function msShowSuccess() {
+  const container = document.getElementById('msPartsContainer');
+  const div = document.createElement('div');
+  div.className = 'success-banner';
+  div.innerHTML = `
+    <div style="font-size:2rem;margin-bottom:10px">🧙‍✨</div>
+    <div class="score">All parts complete!</div>
+    <div class="msg" style="margin-bottom:16px">Outstanding spell work — you solved a multi-step problem!</div>
+    <button class="step-btn" onclick="msIndex++;msLoadProblem()">Next Challenge →</button>
+  `;
+  container.appendChild(div);
+  div.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// =============================================
+// BREAKDOWN + DECIMAL SHIFT WIDGET
+// For 8 × 24 → (8 × 20) + (8 × 4)
+// The 8×20 sub-problem uses decimal shift: 20→2, 8×2=16, shift back→160
+// =============================================
+
+// State per breakdown instance (keyed by partIdx)
+const bdState = {};
+
+function renderBreakdown(idx) {
+  const btn = document.getElementById(`breakdownBtn${idx}`);
+  if (btn) btn.style.display = 'none';
+
+  bdState[idx] = {
+    // Sub-problem A: 8 × 20 via decimal
+    decOffset: 0,       // decimal shift on 20
+    simpleAns: null,    // user's answer to 8 × 2
+    simpleCorrect: false,
+    shiftBackOffset: 0, // shift back on result
+    partADone: false,
+    // Sub-problem B: 8 × 4
+    partBAns: null,
+    partBDone: false,
+    // Final sum
+    sumAns: null,
+    sumDone: false,
+  };
+
+  const area = document.getElementById(`breakdownArea${idx}`);
+  area.innerHTML = `
+    <div style="background:rgba(78,201,176,0.06);border:1px solid rgba(78,201,176,0.25);border-radius:10px;padding:16px;margin-bottom:10px">
+      <div style="font-family:'Cinzel',serif;font-size:0.78rem;color:var(--teal);letter-spacing:1px;margin-bottom:12px;text-transform:uppercase">
+        🔬 Breaking Down 8 × 24
+      </div>
+      <div style="font-size:0.92rem;color:#d4c49a;margin-bottom:14px;line-height:1.6">
+        Split 24 into <strong style="color:var(--accent)">20 + 4</strong>. Solve each part, then add them together.<br>
+        <span style="color:var(--teal)">8 × 24 = (8 × 20) + (8 × 4)</span>
+      </div>
+
+      <!-- PART A: 8 × 20 with decimal widget -->
+      <div id="bdPartA${idx}" style="background:rgba(0,0,0,0.2);border-radius:8px;padding:14px;margin-bottom:12px;border:1px solid var(--border)">
+        <div style="font-family:'Cinzel',serif;font-size:0.78rem;color:var(--accent2);letter-spacing:1px;margin-bottom:10px">Part A — 8 × 20</div>
+        <div style="font-size:0.9rem;color:#d4c49a;margin-bottom:12px;line-height:1.6">
+          Multiplying by 20 is tricky. The <strong style="color:var(--accent)">decimal trick</strong>: shift the decimal in 20 one place left → it becomes <strong>2</strong>. Now solve 8 × 2. Then shift the decimal one place right in your answer to get back to ×20.
+        </div>
+
+        <!-- Decimal display of 20 -->
+        <div style="text-align:center;margin-bottom:10px">
+          <div style="font-family:'Cinzel',serif;font-size:0.7rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Shift the decimal in <span style="color:var(--accent)">20</span></div>
+          <div id="bdDecDisplay${idx}" style="display:flex;justify-content:center;align-items:center;gap:3px;margin-bottom:8px"></div>
+          <div style="display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:6px">
+            <button class="arrow-btn" onclick="bdShift(${idx},-1)" title="Shift left ÷10">◀</button>
+            <div id="bdDecLabel${idx}" style="font-family:'Crimson Text',serif;font-size:0.88rem;color:var(--muted);min-width:160px;text-align:center;font-style:italic">Original position</div>
+            <button class="arrow-btn" onclick="bdShift(${idx},1)" title="Shift right ×10">▶</button>
+          </div>
+          <div id="bdDecVal${idx}" style="font-family:'Space Mono',monospace;font-size:0.85rem;color:var(--teal);text-align:center"></div>
+        </div>
+
+        <!-- 8 × shifted value = ? -->
+        <div id="bdSimpleEq${idx}" style="display:none">
+          <div style="font-family:'Cinzel',serif;font-size:0.7rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;text-align:center">Now solve the simple multiplication</div>
+          <div class="eq-builder" style="margin-bottom:8px">
+            <div class="eq-num-box">8</div>
+            <div class="eq-op">×</div>
+            <div class="eq-num-box" id="bdShiftedVal${idx}">2</div>
+            <div class="eq-op">=</div>
+            <input class="eq-input" id="bdSimpleInput${idx}" type="number" placeholder="?"
+              onkeydown="if(event.key==='Enter') bdCheckSimple(${idx})">
+          </div>
+          <div style="display:flex;gap:8px;justify-content:center">
+            <button class="step-btn" style="font-size:0.82rem;padding:7px 16px" onclick="bdCheckSimple(${idx})">✓ Check</button>
+          </div>
+          <div id="bdSimpleFb${idx}" style="font-size:0.85rem;min-height:18px;text-align:center;margin-top:6px"></div>
+        </div>
+
+        <!-- Shift result back -->
+        <div id="bdShiftBack${idx}" style="display:none;margin-top:10px">
+          <div style="font-family:'Cinzel',serif;font-size:0.7rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;text-align:center">Shift the decimal back in your answer</div>
+          <div id="bdResultDisplay${idx}" style="display:flex;justify-content:center;align-items:center;gap:3px;margin-bottom:8px"></div>
+          <div style="display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:6px">
+            <button class="arrow-btn" onclick="bdShiftResult(${idx},-1)">◀</button>
+            <div id="bdResultLabel${idx}" style="font-family:'Crimson Text',serif;font-size:0.88rem;color:var(--muted);min-width:160px;text-align:center;font-style:italic">Original position</div>
+            <button class="arrow-btn" onclick="bdShiftResult(${idx},1)">▶</button>
+          </div>
+          <div id="bdResultVal${idx}" style="font-family:'Space Mono',monospace;font-size:0.85rem;color:var(--teal);text-align:center;margin-bottom:8px"></div>
+          <div style="display:flex;gap:8px;justify-content:center">
+            <button class="step-btn" style="font-size:0.82rem;padding:7px 16px" onclick="bdCheckShiftBack(${idx})">✓ Lock in 8 × 20 answer</button>
+          </div>
+          <div id="bdShiftBackFb${idx}" style="font-size:0.85rem;min-height:18px;text-align:center;margin-top:6px"></div>
+        </div>
+
+        <div id="bdPartADone${idx}" style="display:none;text-align:center;padding:10px;background:rgba(40,180,80,0.08);border-radius:8px;margin-top:8px">
+          <span style="color:var(--green);font-family:'Space Mono',monospace;font-weight:700">8 × 20 = 160 ✓</span>
+        </div>
+      </div>
+
+      <!-- PART B: 8 × 4 -->
+      <div id="bdPartB${idx}" style="background:rgba(0,0,0,0.2);border-radius:8px;padding:14px;margin-bottom:12px;border:1px solid var(--border);opacity:0.4;pointer-events:none">
+        <div style="font-family:'Cinzel',serif;font-size:0.78rem;color:var(--accent2);letter-spacing:1px;margin-bottom:10px">Part B — 8 × 4</div>
+        <div style="font-size:0.9rem;color:#d4c49a;margin-bottom:10px">Now the easy part — what is 8 × 4?</div>
+        <div class="eq-builder" style="margin-bottom:8px">
+          <div class="eq-num-box">8</div>
+          <div class="eq-op">×</div>
+          <div class="eq-num-box">4</div>
+          <div class="eq-op">=</div>
+          <input class="eq-input" id="bdPartBInput${idx}" type="number" placeholder="?"
+            onkeydown="if(event.key==='Enter') bdCheckPartB(${idx})">
+        </div>
+        <div style="display:flex;gap:8px;justify-content:center">
+          <button class="step-btn" style="font-size:0.82rem;padding:7px 16px" onclick="bdCheckPartB(${idx})">✓ Check</button>
+        </div>
+        <div id="bdPartBFb${idx}" style="font-size:0.85rem;min-height:18px;text-align:center;margin-top:6px"></div>
+      </div>
+
+      <!-- FINAL SUM -->
+      <div id="bdFinalSum${idx}" style="background:rgba(0,0,0,0.2);border-radius:8px;padding:14px;border:1px solid var(--border);opacity:0.4;pointer-events:none">
+        <div style="font-family:'Cinzel',serif;font-size:0.78rem;color:var(--accent2);letter-spacing:1px;margin-bottom:10px">Final Step — Add the Parts</div>
+        <div style="font-size:0.9rem;color:#d4c49a;margin-bottom:10px">8 × 20 = 160 and 8 × 4 = 32. Now add them to get 8 × 24.</div>
+        <div class="eq-builder" style="margin-bottom:8px">
+          <div class="eq-num-box">160</div>
+          <div class="eq-op">+</div>
+          <div class="eq-num-box">32</div>
+          <div class="eq-op">=</div>
+          <input class="eq-input" id="bdFinalInput${idx}" type="number" placeholder="?"
+            onkeydown="if(event.key==='Enter') bdCheckFinal(${idx})">
+        </div>
+        <div style="display:flex;gap:8px;justify-content:center">
+          <button class="step-btn" style="font-size:0.82rem;padding:7px 16px" onclick="bdCheckFinal(${idx})">✓ Check</button>
+        </div>
+        <div id="bdFinalFb${idx}" style="font-size:0.85rem;min-height:18px;text-align:center;margin-top:6px"></div>
+      </div>
+    </div>
+  `;
+
+  bdRenderDec(idx);
+}
+
+// --- Decimal display helpers ---
+function bdDigitRow(numStr, dotAfterIdx) {
+  // numStr = e.g. "20" or "2", dotAfterIdx = position dot goes after (0-based from left)
+  let html = '<div style="display:flex;align-items:center;gap:2px;">';
+  const chars = numStr.split('');
+  for (let i = 0; i <= chars.length; i++) {
+    if (i === dotAfterIdx) {
+      html += `<div style="width:14px;height:56px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px;position:relative;flex-shrink:0">
+        <div style="width:12px;height:12px;background:var(--accent);border-radius:50%;box-shadow:0 0 14px var(--accent),0 0 28px rgba(245,200,66,0.4);"></div>
+      </div>`;
+    }
+    if (i < chars.length) {
+      const isOrig = chars[i] !== '0' || i === chars.length - 1;
+      html += `<div style="background:var(--digit-bg);border:1px solid var(--border);border-radius:6px;width:48px;height:60px;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:1.8rem;font-weight:700;color:${isOrig ? 'var(--text)' : 'var(--muted)'}">${chars[i]}</div>`;
+    }
+  }
+  html += '</div>';
+  return html;
+}
+
+function bdRenderDec(idx) {
+  const s = bdState[idx];
+  // 20 with decimal shifted
+  // Natural number: 20 → digits "20", natural dot after index 2 (end)
+  // offset -1 → dot after index 1 → shows "2.0" = value 2
+  const offset = s.decOffset;
+  const value = 20 * Math.pow(10, offset);
+  const label = document.getElementById(`bdDecLabel${idx}`);
+  const valEl = document.getElementById(`bdDecVal${idx}`);
+
+  // Build display string for 20 with dot position
+  // digits: '2','0', natural dotPos = 2 (after all)
+  let dotAfter = 2 + offset; // shift left = smaller index
+  let displayStr = '20';
+  // add leading zero if needed
+  if (dotAfter <= 0) {
+    displayStr = '0'.repeat(1 - dotAfter) + '20';
+    dotAfter = 1;
+  }
+  // add trailing zero if dotAfter > length
+  while (dotAfter > displayStr.length) displayStr += '0';
+
+  document.getElementById(`bdDecDisplay${idx}`).innerHTML = bdDigitRow(displayStr, dotAfter);
+
+  if (offset === 0) {
+    label.textContent = 'Original position';
+    valEl.textContent = '20 — shift left once to simplify';
+    valEl.style.color = 'var(--muted)';
+    document.getElementById(`bdSimpleEq${idx}`).style.display = 'none';
+  } else if (offset === -1) {
+    label.textContent = '1 step left → ÷10 → value = 2';
+    valEl.innerHTML = '<span style="color:var(--teal)">20 became 2 ✓ — now solve 8 × 2 below</span>';
+    document.getElementById(`bdSimpleEq${idx}`).style.display = 'block';
+    document.getElementById(`bdShiftedVal${idx}`).textContent = '2';
+  } else if (offset < -1) {
+    label.textContent = `Too far! Shift right to get back to 2`;
+    valEl.innerHTML = `<span style="color:var(--accent3)">Value = ${value} — that's too small. Go back.</span>`;
+    document.getElementById(`bdSimpleEq${idx}`).style.display = 'none';
+  } else {
+    label.textContent = `${offset} step right — value = ${value}`;
+    valEl.innerHTML = `<span style="color:var(--accent3)">Value = ${value} — try shifting LEFT to simplify.</span>`;
+    document.getElementById(`bdSimpleEq${idx}`).style.display = 'none';
+  }
+}
+
+function bdShift(idx, dir) {
+  const s = bdState[idx];
+  if (s.partADone) return;
+  s.decOffset = Math.max(-2, Math.min(1, s.decOffset + dir));
+  bdRenderDec(idx);
+}
+
+function bdCheckSimple(idx) {
+  const s = bdState[idx];
+  const input = document.getElementById(`bdSimpleInput${idx}`);
+  const fb = document.getElementById(`bdSimpleFb${idx}`);
+  const val = parseInt(input.value, 10);
+  if (val === 16) {
+    input.className = 'eq-input correct';
+    fb.innerHTML = '<span style="color:var(--green)">✓ 8 × 2 = 16. Now shift the decimal in 16 one place right to restore ×20!</span>';
+    s.simpleCorrect = true;
+    s.simpleAns = 16;
+    setTimeout(() => {
+      document.getElementById(`bdShiftBack${idx}`).style.display = 'block';
+      bdRenderResult(idx);
+    }, 600);
+  } else {
+    input.className = 'eq-input wrong';
+    fb.innerHTML = '<span style="color:var(--accent3)">✗ Not quite — try again!</span>';
+    setTimeout(() => { input.className = 'eq-input'; }, 600);
+  }
+}
+
+function bdRenderResult(idx) {
+  const s = bdState[idx];
+  const offset = s.shiftBackOffset;
+  // base answer is 16, we want to shift right +1 to get 160
+  const value = 16 * Math.pow(10, offset);
+  const label = document.getElementById(`bdResultLabel${idx}`);
+  const valEl = document.getElementById(`bdResultVal${idx}`);
+
+  // digits of 16 with dot position
+  let dotAfter = 2 + offset;
+  let displayStr = '16';
+  if (dotAfter > displayStr.length) {
+    displayStr += '0'.repeat(dotAfter - displayStr.length);
+  }
+  while (dotAfter <= 0) {
+    displayStr = '0' + displayStr;
+    dotAfter++;
+  }
+
+  document.getElementById(`bdResultDisplay${idx}`).innerHTML = bdDigitRow(displayStr, dotAfter);
+
+  if (offset === 0) {
+    label.textContent = 'Original — shift right once';
+    valEl.innerHTML = '<span style="color:var(--muted)">16 — shift right ▶ to restore the ×10 you borrowed</span>';
+  } else if (offset === 1) {
+    label.textContent = '1 step right → ×10 → value = 160';
+    valEl.innerHTML = '<span style="color:var(--green)">160 ✓ — that\'s 8 × 20!</span>';
+  } else if (offset > 1) {
+    label.textContent = `Too far! Go back left.`;
+    valEl.innerHTML = `<span style="color:var(--accent3)">${value} — shifted too far, go back.</span>`;
+  } else {
+    label.textContent = `${offset} step left — value = ${value}`;
+    valEl.innerHTML = `<span style="color:var(--accent3)">${value} — try shifting RIGHT.</span>`;
+  }
+}
+
+function bdShiftResult(idx, dir) {
+  const s = bdState[idx];
+  if (s.partADone) return;
+  s.shiftBackOffset = Math.max(-1, Math.min(2, s.shiftBackOffset + dir));
+  bdRenderResult(idx);
+}
+
+function bdCheckShiftBack(idx) {
+  const s = bdState[idx];
+  const fb = document.getElementById(`bdShiftBackFb${idx}`);
+  const value = 16 * Math.pow(10, s.shiftBackOffset);
+  if (value === 160) {
+    fb.innerHTML = '<span style="color:var(--green)">✓ 8 × 20 = 160!</span>';
+    s.partADone = true;
+    document.getElementById(`bdPartADone${idx}`).style.display = 'block';
+    document.getElementById(`bdShiftBack${idx}`).style.opacity = '0.5';
+    // Unlock Part B
+    setTimeout(() => {
+      const partB = document.getElementById(`bdPartB${idx}`);
+      partB.style.opacity = '1';
+      partB.style.pointerEvents = '';
+      partB.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 500);
+  } else {
+    fb.innerHTML = `<span style="color:var(--accent3)">Not quite — current value is ${value}. Shift right ▶ once to get 160.</span>`;
+  }
+}
+
+function bdCheckPartB(idx) {
+  const s = bdState[idx];
+  const input = document.getElementById(`bdPartBInput${idx}`);
+  const fb = document.getElementById(`bdPartBFb${idx}`);
+  const val = parseInt(input.value, 10);
+  if (val === 32) {
+    input.className = 'eq-input correct';
+    fb.innerHTML = '<span style="color:var(--green)">✓ 8 × 4 = 32!</span>';
+    s.partBDone = true;
+    setTimeout(() => {
+      const finalSum = document.getElementById(`bdFinalSum${idx}`);
+      finalSum.style.opacity = '1';
+      finalSum.style.pointerEvents = '';
+      finalSum.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 500);
+  } else {
+    input.className = 'eq-input wrong';
+    fb.innerHTML = '<span style="color:var(--accent3)">✗ Not quite — try again!</span>';
+    setTimeout(() => { input.className = 'eq-input'; }, 600);
+  }
+}
+
+function bdCheckFinal(idx) {
+  const s = bdState[idx];
+  const input = document.getElementById(`bdFinalInput${idx}`);
+  const fb = document.getElementById(`bdFinalFb${idx}`);
+  const val = parseInt(input.value, 10);
+  if (val === 192) {
+    input.className = 'eq-input correct';
+    fb.innerHTML = '<span style="color:var(--green)">✓ 160 + 32 = 192 — so 8 × 24 = 192!</span>';
+    s.sumDone = true;
+    // Auto-fill the main answer
+    const mainInput = document.getElementById(`msInput${idx}`);
+    if (mainInput) {
+      mainInput.value = 192;
+      mainInput.className = 'eq-input correct';
+    }
+    setTimeout(() => msCheckPart(idx), 700);
+  } else {
+    input.className = 'eq-input wrong';
+    fb.innerHTML = '<span style="color:var(--accent3)">✗ Not quite — try again!</span>';
+    setTimeout(() => { input.className = 'eq-input'; }, 600);
+  }
+}
+
+// =============================================
+// HELPERS
+// =============================================
+function toggleHint(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('visible');
+}
+
+function switchTab(idx) {
+  document.querySelectorAll('.tab-panel').forEach((p, i) => p.classList.toggle('active', i === idx));
+  document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+  document.getElementById('catRow').style.display = idx === 0 ? '' : 'none';
+  document.getElementById('scoreRow').style.display = idx === 0 ? '' : 'none';
+  document.querySelector('.progress-wrap').style.display = idx === 0 ? '' : 'none';
+}
+
+function setCategory(cat, el) {
+  currentCategory = cat;
+  document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  buildQueue();
+  loadProblem();
+  document.getElementById('stepsContainer').style.display = 'none';
+  document.getElementById('problemCard').style.display = '';
+}
+
+// =============================================
+// START
+// =============================================
+init();
+msInit();
+advInit();
+</script>
+</body>
+</html>
