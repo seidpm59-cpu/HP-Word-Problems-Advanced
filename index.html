@@ -1028,7 +1028,7 @@ function buildQueue() {
     const j = Math.floor(Math.random() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
   }
-  problemQueue = pool;
+  problemQueue = pool.slice(0, 5);
   queueIndex = 0;
 }
 
