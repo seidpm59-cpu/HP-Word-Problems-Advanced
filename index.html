@@ -121,7 +121,7 @@
   .viz-group-label { font-size: 0.72rem; color: var(--muted); font-family: 'Cinzel', serif; letter-spacing: 0.5px; text-align: center; }
   .viz-icons { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; max-width: 240px; }
   .viz-icon { font-size: 1.3rem; line-height: 1; transition: transform 0.2s; }
-  .viz-icon.new-item { animation: pop-in 0.4s cubic-bezier(0.34,1.56,0.64,1); color: var(--teal); }
+  .viz-icon.new-item { animation: pop-in 0.6s cubic-bezier(0.34,1.56,0.64,1); color: var(--teal); }
   @keyframes pop-in { from { transform: scale(0) rotate(-15deg); opacity: 0; } to { transform: scale(1) rotate(0deg); opacity: 1; } }
   .viz-plus { font-size: 1.6rem; color: var(--accent); font-weight: 900; align-self: center; padding: 0 6px; }
   .viz-total-line { width: 100%; border-top: 2px solid rgba(245,200,66,0.3); padding-top: 10px; display: flex; align-items: center; gap: 10px; }
@@ -391,7 +391,7 @@
       <div class="explanation" id="step1explain"></div>
       <div class="viz-area" id="vizArea"></div>
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-        <button class="step-btn" id="animBtn" onclick="animateViz()">▶ Play Animation</button>
+        
         <button class="hint-btn" onclick="toggleHint('hint1')">💡 Hint</button>
       </div>
       <div class="hint-box" id="hint1"></div>
@@ -546,12 +546,17 @@
 
 <!-- History Log -->
   <div class="card" id="historyCard" style="margin-top:18px; width: 100%; max-width: 760px; margin-left: auto; margin-right: auto;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-      <div class="card-title" style="margin-bottom:0">📜 Spell Book — Answered Problems</div>
-      <button class="reset-btn" style="margin-top:0" onclick="clearHistory()">✕ Clear History</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;cursor:pointer;user-select:none" onclick="toggleHistory()">
+      <div class="card-title" style="margin-bottom:0;display:flex;align-items:center;gap:8px">
+        <span>📜 Spell Book — Answered Problems</span>
+        <span id="historyChevron" style="font-size:0.8rem;color:var(--muted);transition:transform 0.3s;">▼</span>
+      </div>
+      <button class="reset-btn" style="margin-top:0" onclick="event.stopPropagation(); clearHistory()">✕ Clear History</button>
     </div>
-    <div id="historyLines">
-      <div style="color:var(--muted);font-style:italic;font-size:0.9rem">No problems answered yet — complete a challenge to record your first entry!</div>
+    <div id="historyCollapseContainer" style="display:none;margin-top:16px;border-top:1px solid var(--border);padding-top:16px">
+      <div id="historyLines">
+        <div style="color:var(--muted);font-style:italic;font-size:0.9rem">No problems answered yet — complete a challenge to record your first entry!</div>
+      </div>
     </div>
   </div>
 
@@ -563,6 +568,546 @@
 // =============================================
 const PROBLEMS = [
   {
+    id: 301, category: 'addition',
+    text: "Harry finds <key>8</key> Galleons in his pocket and <key>3</key> more in his trunk. How many Galleons does he have in total?",
+    icon: '🪙', nums: [8, 3], op: '+', answer: 11,
+    groupLabels: ['Pocket', 'Trunk'],
+    step1explain: "Picture the 8 Galleons in his pocket, then add the 3 from his trunk.",
+    step2explain: "Combine the Galleons from both places.",
+    step3explain: "Add 8 + 3 = 11.",
+    hint1: "Combine the quantities.",
+    hint2: "The equation is: 8 + 3 = ?",
+    hint3: "8 + 3 = 11."
+  },
+  {
+    id: 302, category: 'addition',
+    text: "Harry finds <key>5</key> Galleons in his pocket and <key>6</key> more in his trunk. How many Galleons does he have in total?",
+    icon: '🪙', nums: [5, 6], op: '+', answer: 11,
+    groupLabels: ['Pocket', 'Trunk'],
+    step1explain: "Picture the 5 Galleons in his pocket, then add the 6 from his trunk.",
+    step2explain: "Combine the Galleons from both places.",
+    step3explain: "Add 5 + 6 = 11.",
+    hint1: "Combine the quantities.",
+    hint2: "The equation is: 5 + 6 = ?",
+    hint3: "5 + 6 = 11."
+  },
+  {
+    id: 303, category: 'addition',
+    text: "Harry finds <key>9</key> Galleons in his pocket and <key>2</key> more in his trunk. How many Galleons does he have in total?",
+    icon: '🪙', nums: [9, 2], op: '+', answer: 11,
+    groupLabels: ['Pocket', 'Trunk'],
+    step1explain: "Picture the 9 Galleons in his pocket, then add the 2 from his trunk.",
+    step2explain: "Combine the Galleons from both places.",
+    step3explain: "Add 9 + 2 = 11.",
+    hint1: "Combine the quantities.",
+    hint2: "The equation is: 9 + 2 = ?",
+    hint3: "9 + 2 = 11."
+  },
+  {
+    id: 304, category: 'addition',
+    text: "Harry finds <key>4</key> Galleons in his pocket and <key>7</key> more in his trunk. How many Galleons does he have in total?",
+    icon: '🪙', nums: [4, 7], op: '+', answer: 11,
+    groupLabels: ['Pocket', 'Trunk'],
+    step1explain: "Picture the 4 Galleons in his pocket, then add the 7 from his trunk.",
+    step2explain: "Combine the Galleons from both places.",
+    step3explain: "Add 4 + 7 = 11.",
+    hint1: "Combine the quantities.",
+    hint2: "The equation is: 4 + 7 = ?",
+    hint3: "4 + 7 = 11."
+  },
+  {
+    id: 305, category: 'addition',
+    text: "Harry finds <key>3</key> Galleons in his pocket and <key>5</key> more in his trunk. How many Galleons does he have in total?",
+    icon: '🪙', nums: [3, 5], op: '+', answer: 8,
+    groupLabels: ['Pocket', 'Trunk'],
+    step1explain: "Picture the 3 Galleons in his pocket, then add the 5 from his trunk.",
+    step2explain: "Combine the Galleons from both places.",
+    step3explain: "Add 3 + 5 = 8.",
+    hint1: "Combine the quantities.",
+    hint2: "The equation is: 3 + 5 = ?",
+    hint3: "3 + 5 = 8."
+  },
+  {
+    id: 306, category: 'addition',
+    text: "Harry finds <key>6</key> Galleons in his pocket and <key>8</key> more in his trunk. How many Galleons does he have in total?",
+    icon: '🪙', nums: [6, 8], op: '+', answer: 14,
+    groupLabels: ['Pocket', 'Trunk'],
+    step1explain: "Picture the 6 Galleons in his pocket, then add the 8 from his trunk.",
+    step2explain: "Combine the Galleons from both places.",
+    step3explain: "Add 6 + 8 = 14.",
+    hint1: "Combine the quantities.",
+    hint2: "The equation is: 6 + 8 = ?",
+    hint3: "6 + 8 = 14."
+  },
+  {
+    id: 307, category: 'subtraction',
+    text: "Neville brings <key>7</key> Trevor the toad treats. Trevor eats <key>3</key> of them. How many treats are left?",
+    icon: '🪲', nums: [7, 3], op: '-', answer: 4,
+    groupLabels: ['Total treats', 'Eaten'],
+    step1explain: "Picture 7 treats, then imagine 3 of them disappearing into Trevor's mouth.",
+    step2explain: "Take away the eaten treats from the total.",
+    step3explain: "Subtract 7 - 3 = 4.",
+    hint1: "Find the difference between the total and the eaten amount.",
+    hint2: "The equation is: 7 - 3 = ?",
+    hint3: "7 - 3 = 4."
+  },
+  {
+    id: 308, category: 'subtraction',
+    text: "Neville brings <key>9</key> Trevor the toad treats. Trevor eats <key>5</key> of them. How many treats are left?",
+    icon: '🪲', nums: [9, 5], op: '-', answer: 4,
+    groupLabels: ['Total treats', 'Eaten'],
+    step1explain: "Picture 9 treats, then imagine 5 of them disappearing into Trevor's mouth.",
+    step2explain: "Take away the eaten treats from the total.",
+    step3explain: "Subtract 9 - 5 = 4.",
+    hint1: "Find the difference between the total and the eaten amount.",
+    hint2: "The equation is: 9 - 5 = ?",
+    hint3: "9 - 5 = 4."
+  },
+  {
+    id: 309, category: 'subtraction',
+    text: "Neville brings <key>8</key> Trevor the toad treats. Trevor eats <key>6</key> of them. How many treats are left?",
+    icon: '🪲', nums: [8, 6], op: '-', answer: 2,
+    groupLabels: ['Total treats', 'Eaten'],
+    step1explain: "Picture 8 treats, then imagine 6 of them disappearing into Trevor's mouth.",
+    step2explain: "Take away the eaten treats from the total.",
+    step3explain: "Subtract 8 - 6 = 2.",
+    hint1: "Find the difference between the total and the eaten amount.",
+    hint2: "The equation is: 8 - 6 = ?",
+    hint3: "8 - 6 = 2."
+  },
+  {
+    id: 310, category: 'subtraction',
+    text: "Neville brings <key>6</key> Trevor the toad treats. Trevor eats <key>2</key> of them. How many treats are left?",
+    icon: '🪲', nums: [6, 2], op: '-', answer: 4,
+    groupLabels: ['Total treats', 'Eaten'],
+    step1explain: "Picture 6 treats, then imagine 2 of them disappearing into Trevor's mouth.",
+    step2explain: "Take away the eaten treats from the total.",
+    step3explain: "Subtract 6 - 2 = 4.",
+    hint1: "Find the difference between the total and the eaten amount.",
+    hint2: "The equation is: 6 - 2 = ?",
+    hint3: "6 - 2 = 4."
+  },
+  {
+    id: 311, category: 'subtraction',
+    text: "Neville brings <key>5</key> Trevor the toad treats. Trevor eats <key>4</key> of them. How many treats are left?",
+    icon: '🪲', nums: [5, 4], op: '-', answer: 1,
+    groupLabels: ['Total treats', 'Eaten'],
+    step1explain: "Picture 5 treats, then imagine 4 of them disappearing into Trevor's mouth.",
+    step2explain: "Take away the eaten treats from the total.",
+    step3explain: "Subtract 5 - 4 = 1.",
+    hint1: "Find the difference between the total and the eaten amount.",
+    hint2: "The equation is: 5 - 4 = ?",
+    hint3: "5 - 4 = 1."
+  },
+  {
+    id: 312, category: 'subtraction',
+    text: "Neville brings <key>12</key> Trevor the toad treats. Trevor eats <key>7</key> of them. How many treats are left?",
+    icon: '🪲', nums: [12, 7], op: '-', answer: 5,
+    groupLabels: ['Total treats', 'Eaten'],
+    step1explain: "Picture 12 treats, then imagine 7 of them disappearing into Trevor's mouth.",
+    step2explain: "Take away the eaten treats from the total.",
+    step3explain: "Subtract 12 - 7 = 5.",
+    hint1: "Find the difference between the total and the eaten amount.",
+    hint2: "The equation is: 12 - 7 = ?",
+    hint3: "12 - 7 = 5."
+  },
+  {
+    id: 313, category: 'multiplication',
+    text: "Professor Sprout needs to re-pot mandrakes. There are <key>3</key> greenhouse tables, and each table holds <key>7</key> mandrake pots. How many mandrakes does Professor Sprout need to re-pot in total?",
+    icon: '🌿', nums: [3, 7], op: '×', answer: 21,
+    groupLabels: ['Table 1','Table 2','Table 3'],
+    step1explain: "Picture 3 long greenhouse tables. On <em>each</em> table sit exactly <strong>7</strong> mandrake pots in their little earthy homes. We have equal groups!",
+    step2explain: "Because we have equal-sized groups, we can calculate the total together.",
+    step3explain: "Multiply 3 × 7 = <strong>21</strong>.",
+    hint1: "Every table has the SAME number of pots. When groups are equal in size, you can calculate the total instead of adding repeatedly.",
+    hint2: "You have 3 tables with 7 pots on each one. The equation is: 3 × 7 = ?",
+    hint3: "3 × 7 = 21."
+  },
+  {
+    id: 314, category: 'multiplication',
+    text: "Professor Sprout needs to re-pot mandrakes. There are <key>2</key> greenhouse tables, and each table holds <key>8</key> mandrake pots. How many mandrakes does Professor Sprout need to re-pot in total?",
+    icon: '🌿', nums: [2, 8], op: '×', answer: 16,
+    groupLabels: ['Table 1','Table 2'],
+    step1explain: "Picture 2 long greenhouse tables. On <em>each</em> table sit exactly <strong>8</strong> mandrake pots in their little earthy homes. We have equal groups!",
+    step2explain: "Because we have equal-sized groups, we can calculate the total together.",
+    step3explain: "Multiply 2 × 8 = <strong>16</strong>.",
+    hint1: "Every table has the SAME number of pots. When groups are equal in size, you can calculate the total instead of adding repeatedly.",
+    hint2: "You have 2 tables with 8 pots on each one. The equation is: 2 × 8 = ?",
+    hint3: "2 × 8 = 16."
+  },
+  {
+    id: 315, category: 'multiplication',
+    text: "Professor Sprout needs to re-pot mandrakes. There are <key>6</key> greenhouse tables, and each table holds <key>4</key> mandrake pots. How many mandrakes does Professor Sprout need to re-pot in total?",
+    icon: '🌿', nums: [6, 4], op: '×', answer: 24,
+    groupLabels: ['Table 1','Table 2','Table 3','Table 4','Table 5','Table 6'],
+    step1explain: "Picture 6 long greenhouse tables. On <em>each</em> table sit exactly <strong>4</strong> mandrake pots in their little earthy homes. We have equal groups!",
+    step2explain: "Because we have equal-sized groups, we can calculate the total together.",
+    step3explain: "Multiply 6 × 4 = <strong>24</strong>.",
+    hint1: "Every table has the SAME number of pots. When groups are equal in size, you can calculate the total instead of adding repeatedly.",
+    hint2: "You have 6 tables with 4 pots on each one. The equation is: 6 × 4 = ?",
+    hint3: "6 × 4 = 24."
+  },
+  {
+    id: 316, category: 'multiplication',
+    text: "Professor Sprout needs to re-pot mandrakes. There are <key>5</key> greenhouse tables, and each table holds <key>5</key> mandrake pots. How many mandrakes does Professor Sprout need to re-pot in total?",
+    icon: '🌿', nums: [5, 5], op: '×', answer: 25,
+    groupLabels: ['Table 1','Table 2','Table 3','Table 4','Table 5'],
+    step1explain: "Picture 5 long greenhouse tables. On <em>each</em> table sit exactly <strong>5</strong> mandrake pots in their little earthy homes. We have equal groups!",
+    step2explain: "Because we have equal-sized groups, we can calculate the total together.",
+    step3explain: "Multiply 5 × 5 = <strong>25</strong>.",
+    hint1: "Every table has the SAME number of pots. When groups are equal in size, you can calculate the total instead of adding repeatedly.",
+    hint2: "You have 5 tables with 5 pots on each one. The equation is: 5 × 5 = ?",
+    hint3: "5 × 5 = 25."
+  },
+  {
+    id: 317, category: 'multiplication',
+    text: "Professor Sprout needs to re-pot mandrakes. There are <key>8</key> greenhouse tables, and each table holds <key>3</key> mandrake pots. How many mandrakes does Professor Sprout need to re-pot in total?",
+    icon: '🌿', nums: [8, 3], op: '×', answer: 24,
+    groupLabels: ['Table 1','Table 2','Table 3','Table 4','Table 5','Table 6','Table 7','Table 8'],
+    step1explain: "Picture 8 long greenhouse tables. On <em>each</em> table sit exactly <strong>3</strong> mandrake pots in their little earthy homes. We have equal groups!",
+    step2explain: "Because we have equal-sized groups, we can calculate the total together.",
+    step3explain: "Multiply 8 × 3 = <strong>24</strong>.",
+    hint1: "Every table has the SAME number of pots. When groups are equal in size, you can calculate the total instead of adding repeatedly.",
+    hint2: "You have 8 tables with 3 pots on each one. The equation is: 8 × 3 = ?",
+    hint3: "8 × 3 = 24."
+  },
+  {
+    id: 318, category: 'multiplication',
+    text: "Professor Sprout needs to re-pot mandrakes. There are <key>4</key> greenhouse tables, and each table holds <key>6</key> mandrake pots. How many mandrakes does Professor Sprout need to re-pot in total?",
+    icon: '🌿', nums: [4, 6], op: '×', answer: 24,
+    groupLabels: ['Table 1','Table 2','Table 3','Table 4'],
+    step1explain: "Picture 4 long greenhouse tables. On <em>each</em> table sit exactly <strong>6</strong> mandrake pots in their little earthy homes. We have equal groups!",
+    step2explain: "Because we have equal-sized groups, we can calculate the total together.",
+    step3explain: "Multiply 4 × 6 = <strong>24</strong>.",
+    hint1: "Every table has the SAME number of pots. When groups are equal in size, you can calculate the total instead of adding repeatedly.",
+    hint2: "You have 4 tables with 6 pots on each one. The equation is: 4 × 6 = ?",
+    hint3: "4 × 6 = 24."
+  },
+  {
+    id: 112, category: 'addition',
+    text: "Hermione checks out <key>4</key> library books on Monday and <key>3</key> more on Tuesday. How many books does she have?",
+    icon: '📚', nums: [4, 3], op: '+', answer: 7,
+    groupLabels: ['Monday', 'Tuesday'],
+    step1explain: "Picture 4 books on her desk, then add 3 more to the pile.",
+    step2explain: "Combine the books from both days.",
+    step3explain: "Add 4 + 3 = 7.",
+    hint1: "Combine the quantities.",
+    hint2: "The equation is: 4 + 3 = ?",
+    hint3: "4 + 3 = 7."
+  },
+  {
+    id: 113, category: 'addition',
+    text: "Hermione checks out <key>5</key> library books on Monday and <key>2</key> more on Tuesday. How many books does she have?",
+    icon: '📚', nums: [5, 2], op: '+', answer: 7,
+    groupLabels: ['Monday', 'Tuesday'],
+    step1explain: "Picture 5 books on her desk, then add 2 more to the pile.",
+    step2explain: "Combine the books from both days.",
+    step3explain: "Add 5 + 2 = 7.",
+    hint1: "Combine the quantities.",
+    hint2: "The equation is: 5 + 2 = ?",
+    hint3: "5 + 2 = 7."
+  },
+  {
+    id: 114, category: 'addition',
+    text: "Hermione checks out <key>6</key> library books on Monday and <key>3</key> more on Tuesday. How many books does she have?",
+    icon: '📚', nums: [6, 3], op: '+', answer: 9,
+    groupLabels: ['Monday', 'Tuesday'],
+    step1explain: "Picture 6 books on her desk, then add 3 more to the pile.",
+    step2explain: "Combine the books from both days.",
+    step3explain: "Add 6 + 3 = 9.",
+    hint1: "Combine the quantities.",
+    hint2: "The equation is: 6 + 3 = ?",
+    hint3: "6 + 3 = 9."
+  },
+  {
+    id: 115, category: 'addition',
+    text: "Hermione checks out <key>2</key> library books on Monday and <key>7</key> more on Tuesday. How many books does she have?",
+    icon: '📚', nums: [2, 7], op: '+', answer: 9,
+    groupLabels: ['Monday', 'Tuesday'],
+    step1explain: "Picture 2 books on her desk, then add 7 more to the pile.",
+    step2explain: "Combine the books from both days.",
+    step3explain: "Add 2 + 7 = 9.",
+    hint1: "Combine the quantities.",
+    hint2: "The equation is: 2 + 7 = ?",
+    hint3: "2 + 7 = 9."
+  },
+  {
+    id: 116, category: 'multiplication',
+    text: "Professor Flitwick charms <key>2</key> desks. Each desk gets <key>4</key> floating candles. How many floating candles are there in total?",
+    icon: '🕯️', nums: [2, 4], op: '×', answer: 8,
+    groupLabels: null,
+    step1explain: "Picture 2 desks, and each one has 4 candles hovering above it.",
+    step2explain: "Because we have equal-sized groups, we can calculate the total together.",
+    step3explain: "Multiply 2 × 4 = 8.",
+    hint1: "Calculate the total candles using the number of desks and candles per desk.",
+    hint2: "The equation is: 2 × 4 = ?",
+    hint3: "2 × 4 = 8."
+  },
+  {
+    id: 117, category: 'multiplication',
+    text: "Professor Flitwick charms <key>5</key> desks. Each desk gets <key>3</key> floating candles. How many floating candles are there in total?",
+    icon: '🕯️', nums: [5, 3], op: '×', answer: 15,
+    groupLabels: null,
+    step1explain: "Picture 5 desks, and each one has 3 candles hovering above it.",
+    step2explain: "Because we have equal-sized groups, we can calculate the total together.",
+    step3explain: "Multiply 5 × 3 = 15.",
+    hint1: "Calculate the total candles using the number of desks and candles per desk.",
+    hint2: "The equation is: 5 × 3 = ?",
+    hint3: "5 × 3 = 15."
+  },
+  {
+    id: 118, category: 'multiplication',
+    text: "Professor Flitwick charms <key>4</key> desks. Each desk gets <key>4</key> floating candles. How many floating candles are there in total?",
+    icon: '🕯️', nums: [4, 4], op: '×', answer: 16,
+    groupLabels: null,
+    step1explain: "Picture 4 desks, and each one has 4 candles hovering above it.",
+    step2explain: "Because we have equal-sized groups, we can calculate the total together.",
+    step3explain: "Multiply 4 × 4 = 16.",
+    hint1: "Calculate the total candles using the number of desks and candles per desk.",
+    hint2: "The equation is: 4 × 4 = ?",
+    hint3: "4 × 4 = 16."
+  },
+  {
+    id: 119, category: 'division',
+    text: "Hagrid has <key>6</key> dragon eggs and wants to place them equally into <key>2</key> warm nests. How many eggs go in each nest?",
+    icon: '🥚', nums: [6, 2], op: '÷', answer: 3,
+    groupLabels: ['Dragon eggs', 'Nests'],
+    step1explain: "Picture 6 eggs being split evenly between 2 nests.",
+    step2explain: "When sharing a total amount equally, we can split it into groups.",
+    step3explain: "Divide 6 ÷ 2 = 3.",
+    hint1: "Split the total number of eggs into 2 equal groups.",
+    hint2: "The equation is: 6 ÷ 2 = ?",
+    hint3: "6 ÷ 2 = 3."
+  },
+  {
+    id: 120, category: 'division',
+    text: "Hagrid has <key>9</key> dragon eggs and wants to place them equally into <key>3</key> warm nests. How many eggs go in each nest?",
+    icon: '🥚', nums: [9, 3], op: '÷', answer: 3,
+    groupLabels: ['Dragon eggs', 'Nests'],
+    step1explain: "Picture 9 eggs being split evenly between 3 nests.",
+    step2explain: "When sharing a total amount equally, we can split it into groups.",
+    step3explain: "Divide 9 ÷ 3 = 3.",
+    hint1: "Split the total number of eggs into 3 equal groups.",
+    hint2: "The equation is: 9 ÷ 3 = ?",
+    hint3: "9 ÷ 3 = 3."
+  },
+  {
+    id: 121, category: 'division',
+    text: "Hagrid has <key>8</key> dragon eggs and wants to place them equally into <key>4</key> warm nests. How many eggs go in each nest?",
+    icon: '🥚', nums: [8, 4], op: '÷', answer: 2,
+    groupLabels: ['Dragon eggs', 'Nests'],
+    step1explain: "Picture 8 eggs being split evenly between 4 nests.",
+    step2explain: "When sharing a total amount equally, we can split it into groups.",
+    step3explain: "Divide 8 ÷ 4 = 2.",
+    hint1: "Split the total number of eggs into 4 equal groups.",
+    hint2: "The equation is: 8 ÷ 4 = ?",
+    hint3: "8 ÷ 4 = 2."
+  },
+  {
+    id: 101, category: 'multiplication',
+    text: "Professor Sprout needs to re-pot mandrakes. There are <key>4</key> greenhouse tables, and each table holds <key>7</key> mandrake pots. How many mandrakes does Professor Sprout need to re-pot in total?",
+    icon: '🌿', nums: [4, 7], op: '×', answer: 28,
+    groupLabels: ['Table 1','Table 2','Table 3','Table 4'],
+    step1explain: "Picture 4 long greenhouse tables. On <em>each</em> table sit exactly <strong>7</strong> mandrake pots in their little earthy homes. We have equal groups — that's multiplication!",
+    step2explain: "You have 4 tables with 7 pots on every single one of them. How many pots are there in total?",
+    step3explain: "Multiply 4 × 7 = <strong>28</strong>.",
+    hint1: "Every table has the SAME number of pots. When groups are equal in size, you can use multiplication instead of adding repeatedly.",
+    hint2: "You have 4 tables with 7 pots on each one. The equation is: 4 × 7 = ?",
+    hint3: "4 × 7 = 28."
+  },
+  {
+    id: 102, category: 'multiplication',
+    text: "Professor Sprout needs to re-pot mandrakes. There are <key>5</key> greenhouse tables, and each table holds <key>9</key> mandrake pots. How many mandrakes does Professor Sprout need to re-pot in total?",
+    icon: '🌿', nums: [5, 9], op: '×', answer: 45,
+    groupLabels: ['Table 1','Table 2','Table 3','Table 4','Table 5'],
+    step1explain: "Picture 5 long greenhouse tables. On <em>each</em> table sit exactly <strong>9</strong> mandrake pots in their little earthy homes. We have equal groups — that's multiplication!",
+    step2explain: "You have 5 tables with 9 pots on every single one of them. How many pots are there in total?",
+    step3explain: "Multiply 5 × 9 = <strong>45</strong>.",
+    hint1: "Every table has the SAME number of pots. When groups are equal in size, you can use multiplication instead of adding repeatedly.",
+    hint2: "You have 5 tables with 9 pots on each one. The equation is: 5 × 9 = ?",
+    hint3: "5 × 9 = 45."
+  },
+  {
+    id: 103, category: 'multiplication',
+    text: "Professor Sprout needs to re-pot mandrakes. There are <key>7</key> greenhouse tables, and each table holds <key>5</key> mandrake pots. How many mandrakes does Professor Sprout need to re-pot in total?",
+    icon: '🌿', nums: [7, 5], op: '×', answer: 35,
+    groupLabels: ['Table 1','Table 2','Table 3','Table 4','Table 5','Table 6','Table 7'],
+    step1explain: "Picture 7 long greenhouse tables. On <em>each</em> table sit exactly <strong>5</strong> mandrake pots in their little earthy homes. We have equal groups — that's multiplication!",
+    step2explain: "You have 7 tables with 5 pots on every single one of them. How many pots are there in total?",
+    step3explain: "Multiply 7 × 5 = <strong>35</strong>.",
+    hint1: "Every table has the SAME number of pots. When groups are equal in size, you can use multiplication instead of adding repeatedly.",
+    hint2: "You have 7 tables with 5 pots on each one. The equation is: 7 × 5 = ?",
+    hint3: "7 × 5 = 35."
+  },
+  {
+    id: 104, category: 'multiplication',
+    text: "Professor Sprout needs to re-pot mandrakes. There are <key>3</key> greenhouse tables, and each table holds <key>6</key> mandrake pots. How many mandrakes does Professor Sprout need to re-pot in total?",
+    icon: '🌿', nums: [3, 6], op: '×', answer: 18,
+    groupLabels: ['Table 1','Table 2','Table 3'],
+    step1explain: "Picture 3 long greenhouse tables. On <em>each</em> table sit exactly <strong>6</strong> mandrake pots in their little earthy homes. We have equal groups — that's multiplication!",
+    step2explain: "You have 3 tables with 6 pots on every single one of them. How many pots are there in total?",
+    step3explain: "Multiply 3 × 6 = <strong>18</strong>.",
+    hint1: "Every table has the SAME number of pots. When groups are equal in size, you can use multiplication instead of adding repeatedly.",
+    hint2: "You have 3 tables with 6 pots on each one. The equation is: 3 × 6 = ?",
+    hint3: "3 × 6 = 18."
+  },
+  {
+    id: 105, category: 'multiplication',
+    text: "Professor Sprout needs to re-pot mandrakes. There are <key>8</key> greenhouse tables, and each table holds <key>4</key> mandrake pots. How many mandrakes does Professor Sprout need to re-pot in total?",
+    icon: '🌿', nums: [8, 4], op: '×', answer: 32,
+    groupLabels: ['Table 1','Table 2','Table 3','Table 4','Table 5','Table 6','Table 7','Table 8'],
+    step1explain: "Picture 8 long greenhouse tables. On <em>each</em> table sit exactly <strong>4</strong> mandrake pots in their little earthy homes. We have equal groups — that's multiplication!",
+    step2explain: "You have 8 tables with 4 pots on every single one of them. How many pots are there in total?",
+    step3explain: "Multiply 8 × 4 = <strong>32</strong>.",
+    hint1: "Every table has the SAME number of pots. When groups are equal in size, you can use multiplication instead of adding repeatedly.",
+    hint2: "You have 8 tables with 4 pots on each one. The equation is: 8 × 4 = ?",
+    hint3: "8 × 4 = 32."
+  },
+  {
+    id: 106, category: 'addition',
+    text: "Harry finds <key>7</key> Galleons in his pocket and <key>2</key> more in his trunk. How many Galleons does he have in total?",
+    icon: '🪙', nums: [7, 2], op: '+', answer: 9,
+    groupLabels: ['Pocket', 'Trunk'],
+    step1explain: "Picture the 7 Galleons in his pocket, then add the 2 from his trunk.",
+    step2explain: "Combine the Galleons from both places.",
+    step3explain: "Add 7 + 2 = 9.",
+    hint1: "Combine the quantities.",
+    hint2: "The equation is: 7 + 2 = ?",
+    hint3: "7 + 2 = 9."
+  },
+  {
+    id: 107, category: 'addition',
+    text: "Harry finds <key>3</key> Galleons in his pocket and <key>8</key> more in his trunk. How many Galleons does he have in total?",
+    icon: '🪙', nums: [3, 8], op: '+', answer: 11,
+    groupLabels: ['Pocket', 'Trunk'],
+    step1explain: "Picture the 3 Galleons in his pocket, then add the 8 from his trunk.",
+    step2explain: "Combine the Galleons from both places.",
+    step3explain: "Add 3 + 8 = 11.",
+    hint1: "Combine the quantities.",
+    hint2: "The equation is: 3 + 8 = ?",
+    hint3: "3 + 8 = 11."
+  },
+  {
+    id: 108, category: 'addition',
+    text: "Harry finds <key>6</key> Galleons in his pocket and <key>5</key> more in his trunk. How many Galleons does he have in total?",
+    icon: '🪙', nums: [6, 5], op: '+', answer: 11,
+    groupLabels: ['Pocket', 'Trunk'],
+    step1explain: "Picture the 6 Galleons in his pocket, then add the 5 from his trunk.",
+    step2explain: "Combine the Galleons from both places.",
+    step3explain: "Add 6 + 5 = 11.",
+    hint1: "Combine the quantities.",
+    hint2: "The equation is: 6 + 5 = ?",
+    hint3: "6 + 5 = 11."
+  },
+  {
+    id: 109, category: 'subtraction',
+    text: "Neville brings <key>8</key> Trevor the toad treats. Trevor eats <key>5</key> of them. How many treats are left?",
+    icon: '🪲', nums: [8, 5], op: '-', answer: 3,
+    groupLabels: ['Total treats', 'Eaten'],
+    step1explain: "Picture 8 treats, then imagine 5 of them disappearing into Trevor's mouth.",
+    step2explain: "Take away the eaten treats from the total.",
+    step3explain: "Subtract 8 - 5 = 3.",
+    hint1: "Find the difference between the total and the eaten amount.",
+    hint2: "The equation is: 8 - 5 = ?",
+    hint3: "8 - 5 = 3."
+  },
+  {
+    id: 110, category: 'subtraction',
+    text: "Neville brings <key>7</key> Trevor the toad treats. Trevor eats <key>4</key> of them. How many treats are left?",
+    icon: '🪲', nums: [7, 4], op: '-', answer: 3,
+    groupLabels: ['Total treats', 'Eaten'],
+    step1explain: "Picture 7 treats, then imagine 4 of them disappearing into Trevor's mouth.",
+    step2explain: "Take away the eaten treats from the total.",
+    step3explain: "Subtract 7 - 4 = 3.",
+    hint1: "Find the difference between the total and the eaten amount.",
+    hint2: "The equation is: 7 - 4 = ?",
+    hint3: "7 - 4 = 3."
+  },
+  {
+    id: 111, category: 'subtraction',
+    text: "Neville brings <key>9</key> Trevor the toad treats. Trevor eats <key>3</key> of them. How many treats are left?",
+    icon: '🪲', nums: [9, 3], op: '-', answer: 6,
+    groupLabels: ['Total treats', 'Eaten'],
+    step1explain: "Picture 9 treats, then imagine 3 of them disappearing into Trevor's mouth.",
+    step2explain: "Take away the eaten treats from the total.",
+    step3explain: "Subtract 9 - 3 = 6.",
+    hint1: "Find the difference between the total and the eaten amount.",
+    hint2: "The equation is: 9 - 3 = ?",
+    hint3: "9 - 3 = 6."
+  },
+  {
+    id: 24, category: 'addition',
+    text: "Luna Lovegood spots <key>7</key> Nargles near the ceiling and <key>5</key> more hiding behind a tapestry. How many Nargles did she find in total?",
+    icon: '✨', nums: [7, 5], op: '+', answer: 12,
+    groupLabels: ['Ceiling', 'Tapestry'],
+    step1explain: "Picture 7 Nargles near the ceiling, then add 5 more.",
+    step2explain: "Combine the Nargles from both spots.",
+    step3explain: "Add 7 + 5 = 12.",
+    hint1: "Combine the quantities.",
+    hint2: "The equation is: 7 + 5 = ?",
+    hint3: "7 + 5 = 12."
+  },
+  {
+    id: 25, category: 'subtraction',
+    text: "Professor McGonagall transfigures <key>8</key> mice into snuffboxes. Unfortunately, <key>2</key> of them turn back into mice. How many snuffboxes are left?",
+    icon: '🐭', nums: [8, 2], op: '-', answer: 6,
+    groupLabels: ['Total snuffboxes', 'Turned back'],
+    step1explain: "Picture 8 snuffboxes, then imagine 2 of them turning back into squeaking mice.",
+    step2explain: "Take away the ones that transformed back.",
+    step3explain: "Subtract 8 - 2 = 6.",
+    hint1: "Find the difference between the total and the broken ones.",
+    hint2: "The equation is: 8 - 2 = ?",
+    hint3: "8 - 2 = 6."
+  },
+  {
+    id: 26, category: 'multiplication',
+    text: "Oliver Wood sets up <key>4</key> Quidditch hoops for target practice. He enchants <key>2</key> Quaffles to fly through each hoop. How many Quaffles are flying?",
+    icon: '🔴', nums: [4, 2], op: '×', answer: 8,
+    groupLabels: null,
+    step1explain: "Picture 4 hoops, and 2 Quaffles zipping through each one.",
+    step2explain: "Because we have equal-sized groups, we can calculate the total together.",
+    step3explain: "Multiply 4 × 2 = 8.",
+    hint1: "Calculate the total Quaffles using the number of hoops and Quaffles per hoop.",
+    hint2: "The equation is: 4 × 2 = ?",
+    hint3: "4 × 2 = 8."
+  },
+  {
+    id: 27, category: 'division',
+    text: "Madam Pince collects <key>6</key> overdue library books and wants to stack them evenly on <key>2</key> different return carts. How many books go on each cart?",
+    icon: '📚', nums: [6, 2], op: '÷', answer: 3,
+    groupLabels: ['Total books', 'Carts'],
+    step1explain: "Picture 6 books being split evenly onto 2 carts.",
+    step2explain: "When sharing a total amount equally, we can split it into groups.",
+    step3explain: "Divide 6 ÷ 2 = 3.",
+    hint1: "Split the total number of books into 2 equal groups.",
+    hint2: "The equation is: 6 ÷ 2 = ?",
+    hint3: "6 ÷ 2 = 3."
+  },
+  {
+    id: 28, category: 'addition',
+    text: "Arthur Weasley finds <key>6</key> spark plugs and <key>8</key> rubber ducks in his shed. How many Muggle artifacts does he have in total?",
+    icon: '🔌', nums: [6, 8], op: '+', answer: 14,
+    groupLabels: ['Spark plugs', 'Rubber ducks'],
+    step1explain: "Picture the spark plugs, then add the rubber ducks.",
+    step2explain: "Combine the items together.",
+    step3explain: "Add 6 + 8 = 14.",
+    hint1: "Combine the quantities.",
+    hint2: "The equation is: 6 + 8 = ?",
+    hint3: "6 + 8 = 14."
+  },
+  {
+    id: 29, category: 'subtraction',
+    text: "Draco Malfoy buys <key>9</key> green apples. Crabbe accidentally drops <key>4</key> of them into the Black Lake. How many apples does Draco have left?",
+    icon: '🍏', nums: [9, 4], op: '-', answer: 5,
+    groupLabels: ['Total apples', 'Dropped'],
+    step1explain: "Picture 9 apples, then imagine 4 sinking into the lake.",
+    step2explain: "Take away the dropped apples from the total.",
+    step3explain: "Subtract 9 - 4 = 5.",
+    hint1: "Find the difference between the starting total and lost amount.",
+    hint2: "The equation is: 9 - 4 = ?",
+    hint3: "9 - 4 = 5."
+  },
+  {
     id: 20, category: 'addition',
     text: "Harry finds <key>5</key> Galleons in his pocket and <key>4</key> more in his trunk. How many Galleons does he have in total?",
     icon: '🪙', nums: [5, 4], op: '+', answer: 9,
@@ -570,7 +1115,7 @@ const PROBLEMS = [
     step1explain: "Picture the 5 Galleons in his pocket, then add the 4 from his trunk.",
     step2explain: "Combine the Galleons from both places.",
     step3explain: "Add 5 + 4 = 9.",
-    hint1: "Combine the two amounts.",
+    hint1: "Combine the quantities.",
     hint2: "The equation is: 5 + 4 = ?",
     hint3: "5 + 4 = 9."
   },
@@ -582,7 +1127,7 @@ const PROBLEMS = [
     step1explain: "Picture 9 treats, then imagine 6 of them disappearing into Trevor's mouth.",
     step2explain: "Take away the eaten treats from the total.",
     step3explain: "Subtract 9 - 6 = 3.",
-    hint1: "Subtract the eaten amount from the total.",
+    hint1: "Find the difference between the total and the eaten amount.",
     hint2: "The equation is: 9 - 6 = ?",
     hint3: "9 - 6 = 3."
   },
@@ -592,9 +1137,9 @@ const PROBLEMS = [
     icon: '🕯️', nums: [3, 3], op: '×', answer: 9,
     groupLabels: null,
     step1explain: "Picture 3 desks, and each one has 3 candles hovering above it.",
-    step2explain: "We have equal groups, so we can multiply.",
+    step2explain: "Because we have equal-sized groups, we can calculate the total together.",
     step3explain: "Multiply 3 × 3 = 9.",
-    hint1: "Multiply the number of desks by the candles per desk.",
+    hint1: "Calculate the total candles using the number of desks and candles per desk.",
     hint2: "The equation is: 3 × 3 = ?",
     hint3: "3 × 3 = 9."
   },
@@ -604,7 +1149,7 @@ const PROBLEMS = [
     icon: '🥚', nums: [8, 2], op: '÷', answer: 4,
     groupLabels: ['Dragon eggs', 'Nests'],
     step1explain: "Picture 8 eggs being split evenly between 2 nests.",
-    step2explain: "When sharing equally, we divide.",
+    step2explain: "When sharing a total amount equally, we can split it into groups.",
     step3explain: "Divide 8 ÷ 2 = 4.",
     hint1: "Split the total number of eggs into 2 equal groups.",
     hint2: "The equation is: 8 ÷ 2 = ?",
@@ -640,7 +1185,7 @@ const PROBLEMS = [
     icon: '🐸', nums: [8, 12], op: '×', answer: 96,
     groupLabels: null,
     step1explain: "Picture <strong>8</strong> groups, and each one has exactly <strong>12</strong> frogs.",
-    step2explain: "Since we have 8 equal groups of 12 frogs, we can multiply to find the total.",
+    step2explain: "Since we have 8 equal groups of 12 frogs, calculate the total.",
     step3explain: "Multiply 8 × 12. 8 × 10 = 80, and 8 × 2 = 16. 80 + 16 = <strong>96</strong>.",
     hint1: "You have multiple groups of the same size. Multiply the number of groups by the frogs in each.",
     hint2: "The equation is: 8 × 12 = ?",
@@ -879,10 +1424,19 @@ function loadProblem() {
 }
 
 function updateProgress() {
-  const total = problemQueue.length;
-  const done = Math.min(queueIndex - 1, total);
-  document.getElementById('progressLabel').textContent = `Problem ${queueIndex} of ${total}`;
-  document.getElementById('progressFill').style.width = `${(done / total) * 100}%`;
+  // Always display progress out of 8 to reduce cognitive load
+  const DISPLAY_TOTAL = 8;
+
+  // Calculate the current cycle position (1 to 8)
+  // When queueIndex is 1, displayNum is 1
+  // When queueIndex is 8, displayNum is 8
+  // When queueIndex is 9, displayNum is 1
+  let displayNum = ((queueIndex - 1) % DISPLAY_TOTAL) + 1;
+  let displayDone = displayNum - 1;
+
+  document.getElementById('progressLabel').textContent = `Problem ${displayNum} of ${DISPLAY_TOTAL}`;
+  document.getElementById('progressFill').style.width = `${(displayDone / DISPLAY_TOTAL) * 100}%`;
+
   document.getElementById('solvedCount').textContent = solved;
   document.getElementById('pointsCount').textContent = points;
   document.getElementById('streakCount').textContent = streak;
@@ -944,8 +1498,18 @@ function startProblem() {
   document.getElementById('step1explain').innerHTML = '';
   // Fold the scene description into hint1 alongside the original hint
   document.getElementById('hint1').innerHTML = `<strong>Scene:</strong> ${p.step1explain}<br><br><strong>Tip:</strong> ${p.hint1}`;
-  renderViz(false);
-  document.getElementById('animBtn').textContent = '▶ Play Animation';
+
+  // Auto-play the visualization and immediately unlock Step 2 without auto-scrolling to it
+  vizAnimated = true;
+  renderViz(true);
+
+  step2Unlocked = true;
+  document.getElementById('step2card').className = 'step-card step-active';
+
+  // Force view to Step 1 so user sees the animation happen
+  setTimeout(() => {
+    document.getElementById('step1card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 50);
 
   // Step 2 (pre-fill content but keep locked)
   document.getElementById('step2explain').innerHTML = p.step2explain;
@@ -983,7 +1547,7 @@ function renderViz(animate) {
       for (let i = 0; i < showN; i++) {
         const ic = document.createElement('span');
         ic.className = 'viz-icon' + (animate ? ' new-item' : '');
-        ic.style.animationDelay = animate ? `${i * 40}ms` : '0';
+        ic.style.animationDelay = animate ? `${i * 100}ms` : '0';
         ic.textContent = p.icon;
         icons.appendChild(ic);
       }
@@ -1054,7 +1618,7 @@ function renderViz(animate) {
       for (let i = 0; i < showPer; i++) {
         const s = document.createElement('span');
         s.className = 'viz-icon' + (animate ? ' new-item' : '');
-        s.style.animationDelay = animate ? `${(g * showPer + i) * 30}ms` : '0';
+        s.style.animationDelay = animate ? `${(g * showPer + i) * 80}ms` : '0';
         s.textContent = p.icon;
         ic.appendChild(s);
       }
@@ -1088,7 +1652,7 @@ function renderViz(animate) {
     for (let i = 0; i < showTotal; i++) {
       const s = document.createElement('span');
       s.className = 'viz-icon' + (animate ? ' new-item' : '');
-      s.style.animationDelay = animate ? `${i * 35}ms` : '0';
+      s.style.animationDelay = animate ? `${i * 90}ms` : '0';
       s.textContent = p.icon;
       poolIcons.appendChild(s);
     }
@@ -1152,21 +1716,6 @@ function renderViz(animate) {
     q.style.cssText = 'width:100%;text-align:center;font-size:0.9rem;color:var(--accent2);font-style:italic;padding-top:8px';
     q.textContent = `How many ${p.icon} go into each group?`;
     area.appendChild(q);
-  }
-}
-
-function animateViz() {
-  const wasAnimated = vizAnimated;
-  vizAnimated = true;
-  renderViz(true);
-  document.getElementById('animBtn').textContent = '↻ Replay Animation';
-
-  // Unlock step 2 after a short delay
-  if (!step2Unlocked) {
-    setTimeout(() => {
-      step2Unlocked = true;
-      unlockStep(2);
-    }, 600);
   }
 }
 
@@ -1634,9 +2183,17 @@ function checkAnswer() {
   }
 }
 
+
 // =============================================
 // HISTORY LOG
 // =============================================
+let historyExpanded = false;
+function toggleHistory() {
+  historyExpanded = !historyExpanded;
+  document.getElementById('historyCollapseContainer').style.display = historyExpanded ? 'block' : 'none';
+  document.getElementById('historyChevron').style.transform = historyExpanded ? 'rotate(180deg)' : 'rotate(0deg)';
+}
+
 const historyLog = [];
 const opNames = { '+': 'Addition', '-': 'Subtraction', '×': 'Multiplication', '÷': 'Division' };
 const opColors = { '+': 'var(--teal)', '-': 'var(--accent3)', '×': 'var(--accent)', '÷': 'var(--accent2)' };
@@ -1709,37 +2266,337 @@ function skipProblem() {
 // =============================================
 const MS_PROBLEMS = [
   {
-    id: 'ms7',
-    text: "Ron finds <key>6</key> Bertie Bott's beans in the morning and <key>3</key> more in the afternoon. He shares all his beans equally among his <key>3</key> friends.",
+    id: 'ms_301',
+    text: "Professor Lupin’s class is facing Boggarts. There are <key>4</key> Boggarts, and each one takes <key>4</key> successful Riddikulus charms to banish. The class has already managed to cast the charm <key>5</key> times. How many more successful charms are needed?",
+    parts: [
+      {
+        label: 'Part (a)',
+        question: "How many successful Riddikulus charms are needed to banish all the Boggarts?",
+        explain: "Find the total charms required. There are 4 Boggarts, requiring 4 charms each. How many charms are needed?",
+        hint_op: "You have 4 equal groups of 4 charms. The equation is: 4 × 4 = ?",
+        hint_solve: "4 × 4 = 16 successful charms needed.",
+        op: '×', nums: [4, 4], answer: 16,
+        answerSentence: "The class needs ___ successful charms.",
+        icon: '✨', groupLabels: ['Boggart 1', 'Boggart 2', 'Boggart 3', 'Boggart 4'],
+      },
+      {
+        label: 'Part (b)',
+        question: "The class cast 5 successful charms. How many more do they need?",
+        explain: "They need 16 charms total (from Part a), but have already cast 5 of them. How many more do they need to cast?",
+        hint_op: "Find the difference between the charms already cast and the total needed. The equation is: 16 - 5 = ?",
+        hint_solve: "16 - 5 = 11 more charms needed.",
+        op: '-', nums: [16, 5], answer: 11,
+        answerSentence: "They need ___ more successful charms.",
+        icon: '✨', groupLabels: ['Total Needed', 'Cast Already'],
+      }
+    ]
+  },
+  {
+    id: 'ms_302',
+    text: "Professor Lupin’s class is facing Boggarts. There are <key>6</key> Boggarts, and each one takes <key>2</key> successful Riddikulus charms to banish. The class has already managed to cast the charm <key>4</key> times. How many more successful charms are needed?",
+    parts: [
+      {
+        label: 'Part (a)',
+        question: "How many successful Riddikulus charms are needed to banish all the Boggarts?",
+        explain: "Find the total charms required. There are 6 Boggarts, requiring 2 charms each. How many charms are needed?",
+        hint_op: "You have 6 equal groups of 2 charms. The equation is: 6 × 2 = ?",
+        hint_solve: "6 × 2 = 12 successful charms needed.",
+        op: '×', nums: [6, 2], answer: 12,
+        answerSentence: "The class needs ___ successful charms.",
+        icon: '✨', groupLabels: ['Boggart 1', 'Boggart 2', 'Boggart 3', 'Boggart 4', 'Boggart 5', 'Boggart 6'],
+      },
+      {
+        label: 'Part (b)',
+        question: "The class cast 4 successful charms. How many more do they need?",
+        explain: "They need 12 charms total (from Part a), but have already cast 4 of them. How many more do they need to cast?",
+        hint_op: "Find the difference between the charms already cast and the total needed. The equation is: 12 - 4 = ?",
+        hint_solve: "12 - 4 = 8 more charms needed.",
+        op: '-', nums: [12, 4], answer: 8,
+        answerSentence: "They need ___ more successful charms.",
+        icon: '✨', groupLabels: ['Total Needed', 'Cast Already'],
+      }
+    ]
+  },
+  {
+    id: 'ms_303',
+    text: "Professor Lupin’s class is facing Boggarts. There are <key>3</key> Boggarts, and each one takes <key>5</key> successful Riddikulus charms to banish. The class has already managed to cast the charm <key>8</key> times. How many more successful charms are needed?",
+    parts: [
+      {
+        label: 'Part (a)',
+        question: "How many successful Riddikulus charms are needed to banish all the Boggarts?",
+        explain: "Find the total charms required. There are 3 Boggarts, requiring 5 charms each. How many charms are needed?",
+        hint_op: "You have 3 equal groups of 5 charms. The equation is: 3 × 5 = ?",
+        hint_solve: "3 × 5 = 15 successful charms needed.",
+        op: '×', nums: [3, 5], answer: 15,
+        answerSentence: "The class needs ___ successful charms.",
+        icon: '✨', groupLabels: ['Boggart 1', 'Boggart 2', 'Boggart 3'],
+      },
+      {
+        label: 'Part (b)',
+        question: "The class cast 8 successful charms. How many more do they need?",
+        explain: "They need 15 charms total (from Part a), but have already cast 8 of them. How many more do they need to cast?",
+        hint_op: "Find the difference between the charms already cast and the total needed. The equation is: 15 - 8 = ?",
+        hint_solve: "15 - 8 = 7 more charms needed.",
+        op: '-', nums: [15, 8], answer: 7,
+        answerSentence: "They need ___ more successful charms.",
+        icon: '✨', groupLabels: ['Total Needed', 'Cast Already'],
+      }
+    ]
+  },
+  {
+    id: 'ms_304',
+    text: "Professor Lupin’s class is facing Boggarts. There are <key>5</key> Boggarts, and each one takes <key>4</key> successful Riddikulus charms to banish. The class has already managed to cast the charm <key>12</key> times. How many more successful charms are needed?",
+    parts: [
+      {
+        label: 'Part (a)',
+        question: "How many successful Riddikulus charms are needed to banish all the Boggarts?",
+        explain: "Find the total charms required. There are 5 Boggarts, requiring 4 charms each. How many charms are needed?",
+        hint_op: "You have 5 equal groups of 4 charms. The equation is: 5 × 4 = ?",
+        hint_solve: "5 × 4 = 20 successful charms needed.",
+        op: '×', nums: [5, 4], answer: 20,
+        answerSentence: "The class needs ___ successful charms.",
+        icon: '✨', groupLabels: ['Boggart 1', 'Boggart 2', 'Boggart 3', 'Boggart 4', 'Boggart 5'],
+      },
+      {
+        label: 'Part (b)',
+        question: "The class cast 12 successful charms. How many more do they need?",
+        explain: "They need 20 charms total (from Part a), but have already cast 12 of them. How many more do they need to cast?",
+        hint_op: "Find the difference between the charms already cast and the total needed. The equation is: 20 - 12 = ?",
+        hint_solve: "20 - 12 = 8 more charms needed.",
+        op: '-', nums: [20, 12], answer: 8,
+        answerSentence: "They need ___ more successful charms.",
+        icon: '✨', groupLabels: ['Total Needed', 'Cast Already'],
+      }
+    ]
+  },
+  {
+    id: 'ms_305',
+    text: "Professor Lupin’s class is facing Boggarts. There are <key>7</key> Boggarts, and each one takes <key>3</key> successful Riddikulus charms to banish. The class has already managed to cast the charm <key>9</key> times. How many more successful charms are needed?",
+    parts: [
+      {
+        label: 'Part (a)',
+        question: "How many successful Riddikulus charms are needed to banish all the Boggarts?",
+        explain: "Find the total charms required. There are 7 Boggarts, requiring 3 charms each. How many charms are needed?",
+        hint_op: "You have 7 equal groups of 3 charms. The equation is: 7 × 3 = ?",
+        hint_solve: "7 × 3 = 21 successful charms needed.",
+        op: '×', nums: [7, 3], answer: 21,
+        answerSentence: "The class needs ___ successful charms.",
+        icon: '✨', groupLabels: ['Boggart 1', 'Boggart 2', 'Boggart 3', 'Boggart 4', 'Boggart 5', 'Boggart 6', 'Boggart 7'],
+      },
+      {
+        label: 'Part (b)',
+        question: "The class cast 9 successful charms. How many more do they need?",
+        explain: "They need 21 charms total (from Part a), but have already cast 9 of them. How many more do they need to cast?",
+        hint_op: "Find the difference between the charms already cast and the total needed. The equation is: 21 - 9 = ?",
+        hint_solve: "21 - 9 = 12 more charms needed.",
+        op: '-', nums: [21, 9], answer: 12,
+        answerSentence: "They need ___ more successful charms.",
+        icon: '✨', groupLabels: ['Total Needed', 'Cast Already'],
+      }
+    ]
+  },
+  {
+    id: 'ms_306',
+    text: "Professor Lupin’s class is facing Boggarts. There are <key>4</key> Boggarts, and each one takes <key>6</key> successful Riddikulus charms to banish. The class has already managed to cast the charm <key>15</key> times. How many more successful charms are needed?",
+    parts: [
+      {
+        label: 'Part (a)',
+        question: "How many successful Riddikulus charms are needed to banish all the Boggarts?",
+        explain: "Find the total charms required. There are 4 Boggarts, requiring 6 charms each. How many charms are needed?",
+        hint_op: "You have 4 equal groups of 6 charms. The equation is: 4 × 6 = ?",
+        hint_solve: "4 × 6 = 24 successful charms needed.",
+        op: '×', nums: [4, 6], answer: 24,
+        answerSentence: "The class needs ___ successful charms.",
+        icon: '✨', groupLabels: ['Boggart 1', 'Boggart 2', 'Boggart 3', 'Boggart 4'],
+      },
+      {
+        label: 'Part (b)',
+        question: "The class cast 15 successful charms. How many more do they need?",
+        explain: "They need 24 charms total (from Part a), but have already cast 15 of them. How many more do they need to cast?",
+        hint_op: "Find the difference between the charms already cast and the total needed. The equation is: 24 - 15 = ?",
+        hint_solve: "24 - 15 = 9 more charms needed.",
+        op: '-', nums: [24, 15], answer: 9,
+        answerSentence: "They need ___ more successful charms.",
+        icon: '✨', groupLabels: ['Total Needed', 'Cast Already'],
+      }
+    ]
+  },
+  {
+    id: 'ms_101',
+    text: "Ron finds <key>4</key> Bertie Bott's beans in the morning and <key>4</key> more in the afternoon. He shares all his beans equally among his <key>2</key> friends. How many beans does each friend get?",
     parts: [
       {
         label: 'Part (a)', question: "How many beans did Ron find in total?",
-        explain: "Find the total amount of beans found in the morning and afternoon.",
-        hint_op: "Combine the two amounts. The equation is: 6 + 3 = ?", hint_solve: "6 + 3 = 9.",
+        explain: "Find the total amount of beans found in the morning and afternoon. How many did he find?",
+        hint_op: "Combine the quantities. The equation is: 4 + 4 = ?", hint_solve: "4 + 4 = 8.",
+        op: '+', nums: [4, 4], answer: 8, answerSentence: "Ron found ___ beans.", icon: '🍬'
+      },
+      {
+        label: 'Part (b)', question: "If he shares the total beans equally among 2 friends, how many does each get?",
+        explain: "Take the total (8) and split evenly among the friends (2). How many beans per friend?",
+        hint_op: "Split the total beans evenly among 2. The equation is: 8 ÷ 2 = ?", hint_solve: "8 ÷ 2 = 4.",
+        op: '÷', nums: [8, 2], answer: 4, answerSentence: "Each friend gets ___ beans.", icon: '🍬'
+      }
+    ]
+  },
+  {
+    id: 'ms_102',
+    text: "Ron finds <key>5</key> Bertie Bott's beans in the morning and <key>4</key> more in the afternoon. He shares all his beans equally among his <key>3</key> friends. How many beans does each friend get?",
+    parts: [
+      {
+        label: 'Part (a)', question: "How many beans did Ron find in total?",
+        explain: "Find the total amount of beans found in the morning and afternoon. How many did he find?",
+        hint_op: "Combine the quantities. The equation is: 5 + 4 = ?", hint_solve: "5 + 4 = 9.",
+        op: '+', nums: [5, 4], answer: 9, answerSentence: "Ron found ___ beans.", icon: '🍬'
+      },
+      {
+        label: 'Part (b)', question: "If he shares the total beans equally among 3 friends, how many does each get?",
+        explain: "Take the total (9) and split evenly among the friends (3). How many beans per friend?",
+        hint_op: "Split the total beans evenly among 3. The equation is: 9 ÷ 3 = ?", hint_solve: "9 ÷ 3 = 3.",
+        op: '÷', nums: [9, 3], answer: 3, answerSentence: "Each friend gets ___ beans.", icon: '🍬'
+      }
+    ]
+  },
+  {
+    id: 'ms_103',
+    text: "Ron finds <key>7</key> Bertie Bott's beans in the morning and <key>5</key> more in the afternoon. He shares all his beans equally among his <key>4</key> friends. How many beans does each friend get?",
+    parts: [
+      {
+        label: 'Part (a)', question: "How many beans did Ron find in total?",
+        explain: "Find the total amount of beans found in the morning and afternoon. How many did he find?",
+        hint_op: "Combine the quantities. The equation is: 7 + 5 = ?", hint_solve: "7 + 5 = 12.",
+        op: '+', nums: [7, 5], answer: 12, answerSentence: "Ron found ___ beans.", icon: '🍬'
+      },
+      {
+        label: 'Part (b)', question: "If he shares the total beans equally among 4 friends, how many does each get?",
+        explain: "Take the total (12) and split evenly among the friends (4). How many beans per friend?",
+        hint_op: "Split the total beans evenly among 4. The equation is: 12 ÷ 4 = ?", hint_solve: "12 ÷ 4 = 3.",
+        op: '÷', nums: [12, 4], answer: 3, answerSentence: "Each friend gets ___ beans.", icon: '🍬'
+      }
+    ]
+  },
+  {
+    id: 'ms_104',
+    text: "Hermione reads <key>3</key> chapters of her Charms book every day for <key>3</key> days. Then she reads <key>2</key> more chapter on Friday. How many chapters does she read altogether?",
+    parts: [
+      {
+        label: 'Part (a)', question: "How many chapters did she read in the first 3 days?",
+        explain: "She read 3 chapters each day for 3 days. How many chapters is that?",
+        hint_op: "Determine the total chapters across those days. The equation is: 3 × 3 = ?", hint_solve: "3 × 3 = 9.",
+        op: '×', nums: [3, 3], answer: 9, answerSentence: "She read ___ chapters.", icon: '📖'
+      },
+      {
+        label: 'Part (b)', question: "With the extra reading on Friday, how many chapters did she read in total?",
+        explain: "Combine Friday's reading with the amount she already read. How many chapters altogether?",
+        hint_op: "Add 2 to the previous total. The equation is: 9 + 2 = ?", hint_solve: "9 + 2 = 11.",
+        op: '+', nums: [9, 2], answer: 11, answerSentence: "She read ___ chapters in total.", icon: '📖'
+      }
+    ]
+  },
+  {
+    id: 'ms_105',
+    text: "Hermione reads <key>4</key> chapters of her Charms book every day for <key>2</key> days. Then she reads <key>1</key> more chapter on Friday. How many chapters does she read altogether?",
+    parts: [
+      {
+        label: 'Part (a)', question: "How many chapters did she read in the first 2 days?",
+        explain: "She read 4 chapters each day for 2 days. How many chapters is that?",
+        hint_op: "Determine the total chapters across those days. The equation is: 4 × 2 = ?", hint_solve: "4 × 2 = 8.",
+        op: '×', nums: [4, 2], answer: 8, answerSentence: "She read ___ chapters.", icon: '📖'
+      },
+      {
+        label: 'Part (b)', question: "With the extra reading on Friday, how many chapters did she read in total?",
+        explain: "Combine Friday's reading with the amount she already read. How many chapters altogether?",
+        hint_op: "Combine 1 to the previous total. The equation is: 8 + 1 = ?", hint_solve: "8 + 1 = 9.",
+        op: '+', nums: [8, 1], answer: 9, answerSentence: "She read ___ chapters in total.", icon: '📖'
+      }
+    ]
+  },
+  {
+    id: 'ms_106',
+    text: "Hermione reads <key>2</key> chapters of her Charms book every day for <key>5</key> days. Then she reads <key>3</key> more chapter on Friday. How many chapters does she read altogether?",
+    parts: [
+      {
+        label: 'Part (a)', question: "How many chapters did she read in the first 5 days?",
+        explain: "She read 2 chapters each day for 5 days. How many chapters is that?",
+        hint_op: "Determine the total chapters across those days. The equation is: 2 × 5 = ?", hint_solve: "2 × 5 = 10.",
+        op: '×', nums: [2, 5], answer: 10, answerSentence: "She read ___ chapters.", icon: '📖'
+      },
+      {
+        label: 'Part (b)', question: "With the extra reading on Friday, how many chapters did she read in total?",
+        explain: "Combine Friday's reading with the amount she already read. How many chapters altogether?",
+        hint_op: "Add 3 to the previous total. The equation is: 10 + 3 = ?", hint_solve: "10 + 3 = 13.",
+        op: '+', nums: [10, 3], answer: 13, answerSentence: "She read ___ chapters in total.", icon: '📖'
+      }
+    ]
+  },
+  {
+    id: 'ms9',
+    text: "Colin Creevey takes <key>4</key> photos in the morning and <key>4</key> photos in the afternoon. He puts them evenly into <key>2</key> photo albums. How many photos go in each album?",
+    parts: [
+      {
+        label: 'Part (a)', question: "How many photos did Colin take in total?",
+        explain: "Find the total amount of photos from both the morning and afternoon. How many photos total?",
+        hint_op: "Combine the quantities. The equation is: 4 + 4 = ?", hint_solve: "4 + 4 = 8.",
+        op: '+', nums: [4, 4], answer: 8, answerSentence: "Colin took ___ photos.", icon: '📷'
+      },
+      {
+        label: 'Part (b)', question: "If he divides the photos evenly into 2 albums, how many go in each?",
+        explain: "Take the total (8) and split evenly across the albums (2). How many photos in each album?",
+        hint_op: "Split the total photos evenly into 2. The equation is: 8 ÷ 2 = ?", hint_solve: "8 ÷ 2 = 4.",
+        op: '÷', nums: [8, 2], answer: 4, answerSentence: "Each album gets ___ photos.", icon: '📔'
+      }
+    ]
+  },
+  {
+    id: 'ms10',
+    text: "Snape deducts <key>5</key> points from Gryffindor for talking, and another <key>3</key> points for messy potions. Dumbledore then awards Gryffindor <key>9</key> points. What is the net change in Gryffindor's points?",
+    parts: [
+      {
+        label: 'Part (a)', question: "How many points did Gryffindor lose in total from Snape?",
+        explain: "Combine the point deductions. How many points were lost?",
+        hint_op: "Combine the two lost amounts. The equation is: 5 + 3 = ?", hint_solve: "5 + 3 = 8.",
+        op: '+', nums: [5, 3], answer: 8, answerSentence: "Gryffindor lost ___ points.", icon: '📉'
+      },
+      {
+        label: 'Part (b)', question: "If Dumbledore gives them 9 points, what is their net point change? (Points gained minus points lost)",
+        explain: "Find the difference between the points lost and the points gained. What is the net point change?",
+        hint_op: "Find the difference between the awarded points and lost points. The equation is: 9 - 8 = ?", hint_solve: "9 - 8 = 1.",
+        op: '-', nums: [9, 8], answer: 1, answerSentence: "They gained ___ net point.", icon: '📈'
+      }
+    ]
+  },
+  {
+    id: 'ms7',
+    text: "Ron finds <key>6</key> Bertie Bott's beans in the morning and <key>3</key> more in the afternoon. He shares all his beans equally among his <key>3</key> friends. How many beans does each friend get?",
+    parts: [
+      {
+        label: 'Part (a)', question: "How many beans did Ron find in total?",
+        explain: "Find the total amount of beans found in the morning and afternoon. How many did he find?",
+        hint_op: "Combine the quantities. The equation is: 6 + 3 = ?", hint_solve: "6 + 3 = 9.",
         op: '+', nums: [6, 3], answer: 9, answerSentence: "Ron found ___ beans.", icon: '🍬'
       },
       {
         label: 'Part (b)', question: "If he shares the total beans equally among 3 friends, how many does each get?",
-        explain: "Take the total (9) and divide by the number of friends (3).",
-        hint_op: "Divide the total beans by 3. The equation is: 9 ÷ 3 = ?", hint_solve: "9 ÷ 3 = 3.",
+        explain: "Take the total (9) and split evenly among the friends (3). How many beans per friend?",
+        hint_op: "Split the total beans evenly among 3. The equation is: 9 ÷ 3 = ?", hint_solve: "9 ÷ 3 = 3.",
         op: '÷', nums: [9, 3], answer: 3, answerSentence: "Each friend gets ___ beans.", icon: '🍬'
       }
     ]
   },
   {
     id: 'ms8',
-    text: "Hermione reads <key>2</key> chapters of her Charms book every day for <key>4</key> days. Then she reads <key>1</key> more chapter on Friday.",
+    text: "Hermione reads <key>2</key> chapters of her Charms book every day for <key>4</key> days. Then she reads <key>1</key> more chapter on Friday. How many chapters does she read altogether?",
     parts: [
       {
         label: 'Part (a)', question: "How many chapters did she read in the first 4 days?",
-        explain: "She read 2 chapters each day for 4 days.",
-        hint_op: "Multiply the chapters per day by the number of days. The equation is: 2 × 4 = ?", hint_solve: "2 × 4 = 8.",
+        explain: "She read 2 chapters each day for 4 days. How many chapters is that?",
+        hint_op: "Determine the total chapters across those days. The equation is: 2 × 4 = ?", hint_solve: "2 × 4 = 8.",
         op: '×', nums: [2, 4], answer: 8, answerSentence: "She read ___ chapters.", icon: '📖'
       },
       {
         label: 'Part (b)', question: "With the extra chapter on Friday, how many chapters did she read in total?",
-        explain: "Add Friday's chapter to the amount she already read.",
-        hint_op: "Add 1 to the previous total. The equation is: 8 + 1 = ?", hint_solve: "8 + 1 = 9.",
+        explain: "Combine Friday's reading with the amount she already read. How many chapters altogether?",
+        hint_op: "Combine 1 to the previous total. The equation is: 8 + 1 = ?", hint_solve: "8 + 1 = 9.",
         op: '+', nums: [8, 1], answer: 9, answerSentence: "She read ___ chapters in total.", icon: '📖'
       }
     ]
@@ -1751,7 +2608,7 @@ const MS_PROBLEMS = [
       {
         label: 'Part (a)',
         question: "How many pumpkins does Hagrid grow in total across all patches?",
-        explain: "Find the total amount of pumpkins grown. He has 3 patches of 15 pumpkins.",
+        explain: "Find the total amount of pumpkins grown. He has 3 patches of 15 pumpkins. How many pumpkins total?",
         hint_op: "You have 3 equal groups of 15. The equation is: 3 × 15 = ?",
         hint_solve: "3 × 15: 3 × 10 = 30 and 3 × 5 = 15. 30 + 15 = 45.",
         op: '×', nums: [3, 15], answer: 45,
@@ -1761,7 +2618,7 @@ const MS_PROBLEMS = [
       {
         label: 'Part (b)',
         question: "Hagrid gives away 12 pumpkins. How many are left for Hogwarts?",
-        explain: "He grew 45 pumpkins (from Part a), but gives 12 of them away.",
+        explain: "He grew 45 pumpkins (from Part a), but gives 12 of them away. How many pumpkins does he keep?",
         hint_op: "Take the total and subtract the ones given away. The equation is: 45 - 12 = ?",
         hint_solve: "45 - 12 = 33 pumpkins left for Hogwarts.",
         op: '-', nums: [45, 12], answer: 33,
@@ -1777,7 +2634,7 @@ const MS_PROBLEMS = [
       {
         label: 'Part (a)',
         question: "How many successful Riddikulus charms are needed to banish all the Boggarts?",
-        explain: "Find the total charms required. There are 5 Boggarts, requiring 3 charms each.",
+        explain: "Find the total charms required. There are 5 Boggarts, requiring 3 charms each. How many charms are needed?",
         hint_op: "You have 5 equal groups of 3 charms. The equation is: 5 × 3 = ?",
         hint_solve: "5 × 3 = 15 successful charms needed.",
         op: '×', nums: [5, 3], answer: 15,
@@ -1787,7 +2644,7 @@ const MS_PROBLEMS = [
       {
         label: 'Part (b)',
         question: "The class cast 8 successful charms. How many more do they need?",
-        explain: "They need 15 charms total (from Part a), but have already cast 8 of them.",
+        explain: "They need 15 charms total (from Part a), but have already cast 8 of them. How many more do they need to cast?",
         hint_op: "Subtract the charms already cast from the total needed. The equation is: 15 - 8 = ?",
         hint_solve: "15 - 8 = 7 more charms needed.",
         op: '-', nums: [15, 8], answer: 7,
@@ -1803,7 +2660,7 @@ const MS_PROBLEMS = [
       {
         label: 'Part (a)',
         question: "How many meat pies did the house-elves bake in total over both days?",
-        explain: "Find the combined amount of pies baked on Monday and Tuesday.",
+        explain: "Find the combined amount of pies baked on Monday and Tuesday. How many pies total?",
         hint_op: "Combine Monday's pies with Tuesday's pies. The equation is: 60 + 36 = ?",
         hint_solve: "60 + 36 = 96 meat pies.",
         op: '+', nums: [60, 36], answer: 96,
@@ -1813,7 +2670,7 @@ const MS_PROBLEMS = [
       {
         label: 'Part (b)',
         question: "If they arrange all the pies onto 8 serving platters, how many go on each platter?",
-        explain: "They have 96 pies total (from Part a), split equally across 8 platters.",
+        explain: "They have 96 pies total (from Part a), split equally across 8 platters. How many pies per platter?",
         hint_op: "Split the total pies into 8 equal groups. The equation is: 96 ÷ 8 = ?",
         hint_solve: "96 ÷ 8: think 8 × 10 = 80, 8 × 2 = 16, so 10 + 2 = 12 pies.",
         op: '÷', nums: [96, 8], answer: 12,
@@ -1830,7 +2687,7 @@ const MS_PROBLEMS = [
       {
         label: 'Part (a)',
         question: "How many doses of Healing Potion does Madam Pomfrey brew per hour?",
-        explain: "Find the rate per hour. She brews 48 doses across 6 hours.",
+        explain: "Find the rate per hour. She brews 48 doses across 6 hours. How many doses per hour?",
         hint_op: "You are distributing 48 doses equally across 6 hours. The equation is: 48 ÷ 6 = ?",
         hint_solve: "48 ÷ 6: think 6 × ? = 48. Since 6 × 8 = 48, the answer is 8.",
         op: '÷', nums: [48, 6], answer: 8,
@@ -1840,7 +2697,7 @@ const MS_PROBLEMS = [
       {
         label: 'Part (b)',
         question: "How many Galleons does it cost to brew one full hour's worth of potions?",
-        explain: "She brews 8 doses per hour (from Part a), and each dose costs 3 Galleons.",
+        explain: "She brews 8 doses per hour (from Part a), and each dose costs 3 Galleons. What is the cost per hour?",
         hint_op: "You have 8 doses and each costs 3 Galleons. The equation is: 8 × 3 = ?",
         hint_solve: "8 × 3 = 24 Galleons per hour.",
         op: '×', nums: [8, 3], answer: 24,
@@ -1897,12 +2754,12 @@ const MS_PROBLEMS = [
   },
   {
     id: 'ms3',
-    text: "The Hogwarts Express carries students to school. The train has <key>8</key> carriages. Each carriage seats <key>24</key> students. This year <key>163</key> students are returning students.",
+    text: "The Hogwarts Express carries students to school. The train has <key>8</key> carriages. Each carriage seats <key>24</key> students. This year <key>163</key> students are returning students. How many seats are available for new first-year students?",
     parts: [
       {
         label: 'Part (a)',
         question: "How many students can the Hogwarts Express carry in total?",
-        explain: "Find the total capacity. There are 8 carriages and each one seats exactly 24 students.",
+        explain: "Find the total capacity. There are 8 carriages and each one seats exactly 24 students. What is the total train capacity?",
         hint_op: "You have 8 equal groups of 24. The equation is: 8 × 24 = ?",
         hint_solve: "8 × 24: use 8 × 20 = 160, then 8 × 4 = 32. Total: 160 + 32 = 192.",
         op: '×', nums: [8, 24], answer: 192,
@@ -1913,7 +2770,7 @@ const MS_PROBLEMS = [
       {
         label: 'Part (b)',
         question: "How many of the seats will be taken by new first-year students if the total capacity is filled?",
-        explain: "The train fits 192 students total and 163 are returning. The rest must be new first-years.",
+        explain: "The train fits 192 students total and 163 are returning. The rest must be new first-years. How many seats are for new students?",
         hint_op: "New students = total capacity − returning students = 192 − 163 = ?",
         hint_solve: "192 − 163: think 192 − 160 = 32, then 32 − 3 = 29.",
         op: '-', nums: [192, 163], answer: 29,
@@ -2412,20 +3269,17 @@ let advBlankState = {}; // blankId → { answered: bool, correct: bool }
 let advSectionUnlocked = []; // [true, false, false, false]
 
 function advInit() {
-  advShuffle = ((currentMode === 'small' || currentMode === 'single')
+  let pool = ((currentMode === 'small' || currentMode === 'single')
     ? ADV_PROBLEMS.filter(isSmallTaggedProblem)
     : [...ADV_PROBLEMS]
-  ).sort(() => Math.random() - 0.5);
-
+  );
+  advShuffle = shuffleArray(pool);
   advIndex = 0;
   advLoadProblem();
 }
 
 function advLoadProblem() {
-  if (advIndex >= advShuffle.length) {
-    advIndex = 0;
-    advShuffle = [...ADV_PROBLEMS].sort(() => Math.random() - 0.5);
-  }
+  if (advIndex >= advShuffle.length) { advIndex = 0; advShuffle = shuffleArray([...advShuffle]); }
   const p = advShuffle[advIndex];
   advBlankState = {};
   advSectionUnlocked = p.sections.map((_, i) => i === 0);
@@ -2710,20 +3564,29 @@ function advShowSuccess() {
 let msIndex = 0;
 let msPartIndex = 0;
 let msPartAnswers = [];
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
 let msShuffle = [];
 
+
 function msInit() {
-  msShuffle = ((currentMode === 'small' || currentMode === 'single')
+  let pool = ((currentMode === 'small' || currentMode === 'single')
     ? MS_PROBLEMS.filter(isSmallTaggedProblem)
     : [...MS_PROBLEMS]
-  ).sort(() => Math.random() - 0.5);
-
+  );
+  msShuffle = shuffleArray(pool);
   msIndex = 0;
   msLoadProblem();
 }
 
 function msLoadProblem() {
-  if (msIndex >= msShuffle.length) { msIndex = 0; msShuffle = [...MS_PROBLEMS].sort(() => Math.random() - 0.5); }
+  if (msIndex >= msShuffle.length) { msIndex = 0; msShuffle = shuffleArray([...msShuffle]); }
   const p = msShuffle[msIndex];
   msPartIndex = 0;
   msPartAnswers = [];
@@ -2855,9 +3718,29 @@ function msCheckPart(partIdx) {
       return;
     }
 
-    if (n0 !== part.nums[0] || n1 !== part.nums[1] || op !== part.op) {
-      if (n0 !== part.nums[0]) { n0El.className = 'eq-input top-num wrong'; setTimeout(() => n0El.className = 'eq-input top-num', 600); }
-      if (n1 !== part.nums[1]) { n1El.className = 'eq-input bottom-num wrong'; setTimeout(() => n1El.className = 'eq-input bottom-num', 600); }
+    let numsCorrect = false;
+    if (part.op === '+' || part.op === '×') {
+      numsCorrect = (n0 === part.nums[0] && n1 === part.nums[1]) || (n0 === part.nums[1] && n1 === part.nums[0]);
+    } else {
+      numsCorrect = (n0 === part.nums[0] && n1 === part.nums[1]);
+    }
+
+    if (!numsCorrect || op !== part.op) {
+      // For visual feedback, if it's commutative we don't know which one they got wrong if they put random numbers.
+      // So if not correct, just flash whichever one doesn't match EITHER valid number.
+      if (!numsCorrect) {
+        if (part.op === '+' || part.op === '×') {
+          if (n0 !== part.nums[0] && n0 !== part.nums[1]) { n0El.className = 'eq-input top-num wrong'; setTimeout(() => n0El.className = 'eq-input top-num', 600); }
+          if (n1 !== part.nums[0] && n1 !== part.nums[1]) { n1El.className = 'eq-input bottom-num wrong'; setTimeout(() => n1El.className = 'eq-input bottom-num', 600); }
+          if ((n0 === part.nums[0] || n0 === part.nums[1]) && n0 === n1 && part.nums[0] !== part.nums[1]) {
+            // e.g. put 4 and 4 when it should be 4 and 2
+            n1El.className = 'eq-input bottom-num wrong'; setTimeout(() => n1El.className = 'eq-input bottom-num', 600);
+          }
+        } else {
+          if (n0 !== part.nums[0]) { n0El.className = 'eq-input top-num wrong'; setTimeout(() => n0El.className = 'eq-input top-num', 600); }
+          if (n1 !== part.nums[1]) { n1El.className = 'eq-input bottom-num wrong'; setTimeout(() => n1El.className = 'eq-input bottom-num', 600); }
+        }
+      }
       if (op !== part.op) { opEl.style.borderColor = 'var(--accent3)'; setTimeout(() => opEl.style.borderColor = 'var(--accent)', 600); }
       fb.innerHTML = '<span style="color:var(--accent3)">The equation setup is not quite right yet.</span>';
       return;
@@ -2879,6 +3762,14 @@ function msCheckPart(partIdx) {
     fb.innerHTML = `<span style="color:var(--green)">✓ Correct! ${part.answerSentence.replace('___', '<strong>' + val + '</strong>')}</span>`;
     document.getElementById(`msPart${partIdx}`).className = 'step-card step-done';
     msPartAnswers[partIdx] = val;
+
+    // Log this part to history
+    addToHistory({
+      text: p.text + ' — ' + part.question,
+      nums: part.nums,
+      op: part.op,
+      answer: part.answer
+    }, true);
 
     setTimeout(() => {
       if (partIdx + 1 < p.parts.length) {
@@ -2916,6 +3807,15 @@ function msCheckMulti(partIdx) {
     fb.innerHTML = `<span style="color:var(--green)">✓ All steps correct! ${part.answerSentence.replace('___', '<strong>' + part.answer + '</strong>')}</span>`;
     document.getElementById(`msPart${partIdx}`).className = 'step-card step-done';
     msPartAnswers[partIdx] = part.answer;
+
+    // Log this multi-op part to history
+    addToHistory({
+      text: p.text + ' — ' + part.question,
+      nums: part.nums,
+      op: part.op,
+      answer: part.answer
+    }, true);
+
     setTimeout(() => {
       if (partIdx + 1 < p.parts.length) msRenderPart(partIdx + 1);
       else msShowSuccess();
