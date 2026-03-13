@@ -258,6 +258,60 @@
   .howto-num { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--accent2), var(--accent)); color: var(--bg); font-family: 'Cinzel', serif; font-weight: 900; font-size: 1rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .howto-text h3 { font-family: 'Cinzel', serif; color: var(--accent2); font-size: 0.95rem; margin-bottom: 4px; }
   .howto-text p { font-size: 0.98rem; color: #d4c49a; line-height: 1.6; }
+
+  .mode-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 8px;
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.9em;
+    cursor: pointer;
+  }
+  .mode-toggle select {
+    background: transparent;
+    color: var(--text);
+    border: none;
+    font-family: 'Space Mono', monospace;
+    outline: none;
+    cursor: pointer;
+  }
+
+
+  /* Stacked Equation Layout */
+  .eq-stack {
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-rows: auto auto auto;
+    gap: 6px 12px;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 18px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 8px;
+    margin: 0 auto 14px auto;
+    width: fit-content;
+  }
+  .eq-stack .top-num { grid-column: 2; grid-row: 1; justify-self: end; }
+  .eq-stack .stack-op {
+    grid-column: 1; grid-row: 2; justify-self: end;
+    font-family: 'Space Mono', monospace; font-size: 1.8rem;
+    color: var(--teal); font-weight: 700;
+  }
+  .eq-stack .bottom-num { grid-column: 2; grid-row: 2; justify-self: end; }
+  .eq-stack .answer-line {
+    grid-column: 1 / span 2; grid-row: 3;
+    border-top: 3px solid var(--muted); padding-top: 10px; margin-top: 2px;
+    width: 100%; display: flex; justify-content: flex-end;
+  }
+  .eq-stack .eq-num-box, .eq-stack .eq-input { text-align: right; }
+  .eq-stack .eq-input { width: 90px; }
+  .eq-stack-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+
 </style>
 </head>
 <body>
@@ -293,6 +347,15 @@
 
 <!-- Main tabs -->
 <div class="tabs">
+  <div class="mode-toggle">
+    <label for="numberMode">Mode:</label>
+    <select id="numberMode" onchange="changeMode()">
+      <option value="unconstrained">Unconstrained</option>
+      <option value="small">1 & 2 Digits</option>
+      <option value="single" selected>Single Digit</option>
+    </select>
+  </div>
+
   <button class="tab-btn active" onclick="switchTab(0)">📜 Practice</button>
   <button class="tab-btn" onclick="switchTab(1)">🔗 Multi-Step</button>
   <button class="tab-btn" onclick="switchTab(2)">⚔️ Advanced</button>
@@ -348,8 +411,6 @@
       <div style="margin-bottom:10px">
         <div style="font-family:'Cinzel',serif;font-size:0.75rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Which operation do you need?</div>
         <div class="op-select-row" id="opSelectRow"></div>
-      </div>
-
       <div class="eq-builder" id="eqBuilder"></div>
       <div class="hint-box" id="hint2"></div>
       <div id="step2feedback" style="font-size:0.88rem;margin-top:6px;min-height:20px"></div>
@@ -380,26 +441,22 @@
 
     <!-- Success -->
     <div id="successArea" style="display:none"></div>
-
   </div>
-
-  <!-- History Log -->
-  <div class="card" id="historyCard" style="margin-top:10px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-      <div class="card-title" style="margin-bottom:0">📜 Spell Book — Answered Problems</div>
-      <button class="reset-btn" style="margin-top:0" onclick="clearHistory()">✕ Clear History</button>
-    </div>
-    <div id="historyLines">
-      <div style="color:var(--muted);font-style:italic;font-size:0.9rem">No problems answered yet — complete a challenge to record your first entry!</div>
-    </div>
-  </div>
-
+</div>
 </div>
 
 <!-- TAB 1: Multi-Step -->
 <div class="tab-panel" id="tab1">
   <div class="card" id="msCard">
-    <div class="card-title">🔗 Multi-Step Challenge</div>
+    <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+      <span>🔗 Multi-Step Challenge</span>
+      <div class="mode-toggle" style="margin:0;">
+        <select id="msBuildModeSelect" onchange="toggleMsBuildMode()">
+          <option value="auto">Auto-fill Numbers</option>
+          <option value="manual" selected>Enter Numbers Manually</option>
+        </select>
+      </div>
+    </div>
     <div class="problem-box" id="msProblemBox">
       <div class="problem-label">Word Problem</div>
       <div class="problem-text" id="msProblemText">Loading…</div>
@@ -410,17 +467,6 @@
     </div>
   </div>
   <div id="msPartsContainer" style="display:none;flex-direction:column;gap:14px"></div>
-
-  <!-- History Log -->
-  <div class="card" id="msHistoryCard" style="margin-top:10px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-      <div class="card-title" style="margin-bottom:0">📜 Spell Book — Answered Problems</div>
-      <button class="reset-btn" style="margin-top:0" onclick="clearMsHistory()">✕ Clear History</button>
-    </div>
-    <div id="msHistoryLines">
-      <div style="color:var(--muted);font-style:italic;font-size:0.9rem">No problems answered yet — complete a challenge to record your first entry!</div>
-    </div>
-  </div>
 </div>
 
 <!-- TAB 2: Advanced -->
@@ -439,17 +485,6 @@
   <!-- Worksheet renders inside the same card for continuity -->
   <div class="card" id="advWorksheetCard" style="display:none;padding:24px 28px">
     <div id="advStepsContainer"></div>
-  </div>
-
-  <!-- History Log -->
-  <div class="card" id="advHistoryCard" style="margin-top:10px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-      <div class="card-title" style="margin-bottom:0">📜 Spell Book — Answered Problems</div>
-      <button class="reset-btn" style="margin-top:0" onclick="clearAdvHistory()">✕ Clear History</button>
-    </div>
-    <div id="advHistoryLines">
-      <div style="color:var(--muted);font-style:italic;font-size:0.9rem">No problems answered yet — complete a challenge to record your first entry!</div>
-    </div>
   </div>
 </div>
 
@@ -506,13 +541,136 @@
       </div>
     </div>
   </div>
+
 </div>
+
+<!-- History Log -->
+  <div class="card" id="historyCard" style="margin-top:18px; width: 100%; max-width: 760px; margin-left: auto; margin-right: auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+      <div class="card-title" style="margin-bottom:0">📜 Spell Book — Answered Problems</div>
+      <button class="reset-btn" style="margin-top:0" onclick="clearHistory()">✕ Clear History</button>
+    </div>
+    <div id="historyLines">
+      <div style="color:var(--muted);font-style:italic;font-size:0.9rem">No problems answered yet — complete a challenge to record your first entry!</div>
+    </div>
+  </div>
+
+
 
 <script>
 // =============================================
 // DATA — Harry Potter word problems
 // =============================================
 const PROBLEMS = [
+  {
+    id: 20, category: 'addition',
+    text: "Harry finds <key>5</key> Galleons in his pocket and <key>4</key> more in his trunk. How many Galleons does he have in total?",
+    icon: '🪙', nums: [5, 4], op: '+', answer: 9,
+    groupLabels: ['Pocket', 'Trunk'],
+    step1explain: "Picture the 5 Galleons in his pocket, then add the 4 from his trunk.",
+    step2explain: "Combine the Galleons from both places.",
+    step3explain: "Add 5 + 4 = 9.",
+    hint1: "Combine the two amounts.",
+    hint2: "The equation is: 5 + 4 = ?",
+    hint3: "5 + 4 = 9."
+  },
+  {
+    id: 21, category: 'subtraction',
+    text: "Neville brings <key>9</key> Trevor the toad treats. Trevor eats <key>6</key> of them. How many treats are left?",
+    icon: '🪲', nums: [9, 6], op: '-', answer: 3,
+    groupLabels: ['Total treats', 'Eaten'],
+    step1explain: "Picture 9 treats, then imagine 6 of them disappearing into Trevor's mouth.",
+    step2explain: "Take away the eaten treats from the total.",
+    step3explain: "Subtract 9 - 6 = 3.",
+    hint1: "Subtract the eaten amount from the total.",
+    hint2: "The equation is: 9 - 6 = ?",
+    hint3: "9 - 6 = 3."
+  },
+  {
+    id: 22, category: 'multiplication',
+    text: "Professor Flitwick charms <key>3</key> desks. Each desk gets <key>3</key> floating candles. How many floating candles are there in total?",
+    icon: '🕯️', nums: [3, 3], op: '×', answer: 9,
+    groupLabels: null,
+    step1explain: "Picture 3 desks, and each one has 3 candles hovering above it.",
+    step2explain: "We have equal groups, so we can multiply.",
+    step3explain: "Multiply 3 × 3 = 9.",
+    hint1: "Multiply the number of desks by the candles per desk.",
+    hint2: "The equation is: 3 × 3 = ?",
+    hint3: "3 × 3 = 9."
+  },
+  {
+    id: 23, category: 'division',
+    text: "Hagrid has <key>8</key> dragon eggs and wants to place them equally into <key>2</key> warm nests. How many eggs go in each nest?",
+    icon: '🥚', nums: [8, 2], op: '÷', answer: 4,
+    groupLabels: ['Dragon eggs', 'Nests'],
+    step1explain: "Picture 8 eggs being split evenly between 2 nests.",
+    step2explain: "When sharing equally, we divide.",
+    step3explain: "Divide 8 ÷ 2 = 4.",
+    hint1: "Split the total number of eggs into 2 equal groups.",
+    hint2: "The equation is: 8 ÷ 2 = ?",
+    hint3: "8 ÷ 2 = 4."
+  },
+  {
+    id: 9, category: 'addition',
+    text: "Neville is counting boils produced by his Mimbulus mimbletonia plant. The plant first shot out <key>34</key> boils onto his robes, and then surprisingly released <key>27</key> more. How many boils hit Neville's robes in total?",
+    icon: '🌱', nums: [34, 27], op: '+', answer: 61,
+    groupLabels: ['First burst', 'Second burst'],
+    step1explain: "Picture Neville covered in <strong>34</strong> boils first. Then another <strong>27</strong> burst out! Combine the two to find the total.",
+    step2explain: "You need the combined sum of the first 34 boils and the extra 27.",
+    step3explain: "Add 34 + 27. 30 + 20 = 50, and 4 + 7 = 11. 50 + 11 = <strong>61</strong>.",
+    hint1: "We are combining two amounts. Add the first burst to the second burst.",
+    hint2: "The equation is: 34 + 27 = ?",
+    hint3: "34 + 27: Tens make 50, ones make 11. 50 + 11 = 61."
+  },
+  {
+    id: 10, category: 'subtraction',
+    text: "Seamus Finnigan brought <key>45</key> Dr. Filibuster's fireworks to the Gryffindor common room. After accidentally setting off <key>18</key> of them before the party started, how many fireworks does he have left?",
+    icon: '🎇', nums: [45, 18], op: '-', answer: 27,
+    groupLabels: ['Total fireworks', 'Set off'],
+    step1explain: "Start with <strong>45</strong> fireworks. Subtract the <strong>18</strong> that were already set off to see what's left.",
+    step2explain: "Take the total number of fireworks and take away the ones that exploded.",
+    step3explain: "Subtract 45 - 18. 45 - 10 = 35. 35 - 8 = <strong>27</strong>.",
+    hint1: "He set some off, so his total goes down. This is a subtraction problem.",
+    hint2: "The equation is: 45 - 18 = ?",
+    hint3: "45 - 18 = 27."
+  },
+  {
+    id: 11, category: 'multiplication',
+    text: "Professor Flitwick is organizing the Hogwarts frog choir. He creates <key>8</key> groups, and places <key>12</key> singing frogs in each group. How many frogs are in the choir altogether?",
+    icon: '🐸', nums: [8, 12], op: '×', answer: 96,
+    groupLabels: null,
+    step1explain: "Picture <strong>8</strong> groups, and each one has exactly <strong>12</strong> frogs.",
+    step2explain: "Since we have 8 equal groups of 12 frogs, we can multiply to find the total.",
+    step3explain: "Multiply 8 × 12. 8 × 10 = 80, and 8 × 2 = 16. 80 + 16 = <strong>96</strong>.",
+    hint1: "You have multiple groups of the same size. Multiply the number of groups by the frogs in each.",
+    hint2: "The equation is: 8 × 12 = ?",
+    hint3: "8 × 12 = 96."
+  },
+  {
+    id: 12, category: 'division',
+    text: "Professor Sprout received a delivery of <key>72</key> bags of dragon dung compost. She wants to divide them evenly among <key>4</key> greenhouses. How many bags does each greenhouse get?",
+    icon: '🪴', nums: [72, 4], op: '÷', answer: 18,
+    groupLabels: ['Total bags', 'Greenhouses'],
+    step1explain: "Picture <strong>72</strong> bags of compost being split equally into <strong>4</strong> separate greenhouses.",
+    step2explain: "When sharing something equally, we use division.",
+    step3explain: "Divide 72 ÷ 4. Half of 72 is 36, and half of 36 is <strong>18</strong>.",
+    hint1: "You are splitting a large group into equal smaller groups.",
+    hint2: "The equation is: 72 ÷ 4 = ?",
+    hint3: "72 ÷ 4 = 18."
+  },
+  {
+    id: 13, category: 'subtraction',
+    text: "Ginny Weasley earned <key>85</key> points for Gryffindor by catching the Snitch in practice, but lost <key>15</key> points later for hexing Zacharias Smith. What was her final point contribution?",
+    icon: '🏆', nums: [85, 15], op: '-', answer: 70,
+    groupLabels: ['Points earned', 'Points lost'],
+    step1explain: "Start with the <strong>85</strong> points Ginny earned, then subtract the <strong>15</strong> points she lost.",
+    step2explain: "Her point total went up, then came down. Find the difference.",
+    step3explain: "Subtract 85 - 15. 80 - 10 = 70, and 5 - 5 = 0. Total is <strong>70</strong>.",
+    hint1: "When points are lost, they are taken away from the total.",
+    hint2: "The equation is: 85 - 15 = ?",
+    hint3: "85 - 15 = 70."
+  }
+,
   {
     id: 1, category: 'addition',
     text: "Hermione helps Ron choose a replacement wand at Ollivander's. The shop stocks <key>32</key> wand varieties on its shelves, but Mr. Ollivander mentions he could make <key>14</key> more custom varieties on request. How many wand varieties are there to choose from in total?",
@@ -523,7 +681,7 @@ const PROBLEMS = [
     groupLabels: ['Stocked wands', 'Custom wands'],
     step1explain: "Imagine the wand shop. Count the wands already on the shelves — that's <strong>32</strong>. Then picture 14 more that Ollivander could craft. We're combining two groups, so we add!",
     step2explain: "You are counting 32 wands already in stock and 14 more that could be made. How many wand choices is that altogether?",
-    step3explain: "Add 32 + 14. Try breaking it apart: start with the tens (30 + 10), then the ones (2 + 4), then combine both results.",
+    step3explain: "Add 32 + 14. You can break it apart: 30 + 10 = 40, then 2 + 4 = 6, so 40 + 6 = <strong>46</strong>.",
     hint1: "There are two separate groups of wands. First group: wands already in stock. Second group: wands he could make. We want the grand total.",
     hint2: "You are combining two groups of wands together. The equation is: 32 + 14 = ?",
     hint3: "32 + 14: start with the tens (30 + 10 = 40), then add the ones (2 + 4 = 6). Total: 46.",
@@ -538,7 +696,7 @@ const PROBLEMS = [
     groupLabels: ['Starting Galleons', 'Spent Galleons'],
     step1explain: "Picture Harry's vault full of <strong>150</strong> gold coins. Now imagine taking <strong>67</strong> away to pay for robes, books, and potion ingredients. We're finding what's left.",
     step2explain: "Harry has 150 Galleons and has used 67 of them. How many Galleons does he have remaining?",
-    step3explain: "150 − 67: try rounding 67 to 70, subtract from 150, then think about how much you over-subtracted and add it back.",
+    step3explain: "150 − 67: try 150 − 70 = 80, then add back 3 (because we subtracted 3 too many): 80 + 3 = <strong>83</strong>.",
     hint1: "We start with a full amount and remove some. What remains? This is a taking-away situation.",
     hint2: "You are taking 67 Galleons away from 150. The equation is: 150 − 67 = ?",
     hint3: "Round 67 to 70: 150 − 70 = 80. Then add 3 back (since 70 is 3 more than 67): 80 + 3 = 83.",
@@ -553,7 +711,7 @@ const PROBLEMS = [
     groupLabels: ['Table 1','Table 2','Table 3','Table 4','Table 5','Table 6'],
     step1explain: "Picture 6 long greenhouse tables. On <em>each</em> table sit exactly <strong>8</strong> mandrake pots in their little earthy homes. We have equal groups — that's multiplication!",
     step2explain: "You have 6 tables with 8 pots on every single one of them. How many pots are there in total?",
-    step3explain: "6 × 8: think of 6 equal groups of 8. You can also try: 6 × 4 = ?, then double that result.",
+    step3explain: "6 × 8: think of it as 6 groups of 8. Or use: 6 × 8 = 6 × 4 × 2 = 24 × 2 = <strong>48</strong>.",
     hint1: "Every table has the SAME number of pots. When groups are equal in size, you can use multiplication instead of adding repeatedly.",
     hint2: "You have 6 tables with 8 pots on each one. The equation is: 6 × 8 = ?",
     hint3: "6 × 8 = 48. You can check: 8 + 8 = 16, 16 + 16 = 32, 32 + 16 = 48. ✓",
@@ -568,7 +726,7 @@ const PROBLEMS = [
     groupLabels: ['Total balls','Teams'],
     step1explain: "Imagine <strong>35</strong> balls laid on the pitch. Madam Hooch divides them into <strong>7</strong> equal piles — one for each team. We need to find the size of each pile.",
     step2explain: "You are distributing 35 balls equally among 7 teams. How many balls does each team receive?",
-    step3explain: "35 ÷ 7: think 'what times 7 equals 35?' Use your 7 times table to find the missing factor.",
+    step3explain: "35 ÷ 7: think 'what times 7 equals 35?' → 7 × 5 = 35, so the answer is <strong>5</strong>.",
     hint1: "We're sharing a total equally into groups. This is the classic division situation.",
     hint2: "You are dividing 35 balls equally into 7 teams. The equation is: 35 ÷ 7 = ?",
     hint3: "Think backwards: 7 × ? = 35. Since 7 × 5 = 35, each team gets 5 balls.",
@@ -583,7 +741,7 @@ const PROBLEMS = [
     groupLabels: ['Restricted books', 'Regular books'],
     step1explain: "Picture two library shelves — one guarded and foreboding with <strong>428</strong> books, one open and welcoming with <strong>193</strong>. We want the grand total of unread books.",
     step2explain: "You have 428 unread books in one section and 193 unread books in another. How many unread books are there in all?",
-    step3explain: "428 + 193: try adding in parts — hundreds first (400 + 100), then tens (20 + 90), then ones (8 + 3). Combine all three partial sums.",
+    step3explain: "428 + 193: add hundreds (400 + 100 = 500), tens (20 + 90 = 110), ones (8 + 3 = 11). 500 + 110 + 11 = <strong>621</strong>.",
     hint1: "Two separate collections are being combined. Combining = addition.",
     hint2: "You are combining two separate collections of books. The equation is: 428 + 193 = ?",
     hint3: "Break it up: 428 + 200 = 628, then subtract 7 (because 193 is 7 less than 200): 628 − 7 = 621.",
@@ -598,7 +756,7 @@ const PROBLEMS = [
     groupLabels: ['DA Members', 'Caught by Umbridge'],
     step1explain: "The DA starts with <strong>25</strong> brave members. Then Umbridge swoops in and catches <strong>9</strong> of them. We need to find how many are still free.",
     step2explain: "You started with 25 DA members and 9 of them have been caught. How many members are still free?",
-    step3explain: "25 − 9: try counting up from 9 to 25. How many steps to reach 15? How many more to reach 25? Add those together.",
+    step3explain: "25 − 9: count up from 9 to 25. 9 + 6 = 15, 15 + 10 = 25 — that's 16 steps. Answer: <strong>16</strong>.",
     hint1: "A group is reduced when some members are taken away. Start big, remove some, find what's left.",
     hint2: "You are taking 9 caught members away from 25. The equation is: 25 − 9 = ?",
     hint3: "25 − 9: think 25 − 10 = 15, then add 1 back (because we subtracted 1 too many): 15 + 1 = 16.",
@@ -613,7 +771,7 @@ const PROBLEMS = [
     groupLabels: null,
     step1explain: "Picture a shelf with <strong>9</strong> different Snackbox flavours. Each type has <strong>12</strong> sales per day. We have 9 equal groups of 12 — time to multiply!",
     step2explain: "You have 9 types of Snackboxes and each type sells 12 boxes every day. How many Snackboxes are sold in total each day?",
-    step3explain: "9 × 12: use the distributive property — split 12 into 10 + 2. Solve 9 × 10 and 9 × 2 separately, then add those two results.",
+    step3explain: "9 × 12: use 9 × 10 = 90, then 9 × 2 = 18. Add them: 90 + 18 = <strong>108</strong>.",
     hint1: "9 equal groups, each the same size. Repeated equal groups → multiplication.",
     hint2: "You have 9 types of boxes selling 12 each day. The equation is: 9 × 12 = ?",
     hint3: "9 × 12 = 9 × 10 + 9 × 2 = 90 + 18 = 108.",
@@ -628,371 +786,10 @@ const PROBLEMS = [
     groupLabels: ['Total drops','Drops per vial'],
     step1explain: "Imagine <strong>72</strong> precious golden drops. Slughorn carefully measures <strong>9</strong> drops into each vial. We're dividing the total into equal portions.",
     step2explain: "You are filling vials with 9 drops each from a batch of 72 drops. How many complete vials can be filled?",
-    step3explain: "72 ÷ 9: think 'what number times 9 gives you 72?' Use your 9 times table — count up: 9, 18, 27… until you reach 72.",
+    step3explain: "72 ÷ 9: what times 9 = 72? 9 × 8 = 72. Answer: <strong>8</strong> vials.",
     hint1: "A total is being divided into equal-sized groups. We need the number of groups.",
     hint2: "You are dividing 72 drops into vials of 9 drops each. The equation is: 72 ÷ 9 = ?",
     hint3: "Use the multiplication family: 9 × ? = 72. You know 9 × 8 = 72, so the answer is 8.",
-  },
-  // ── More variety ──
-  {
-    id: 9, category: 'addition',
-    text: "Neville collects Chocolate Frog Cards. He has <key>47</key> cards already and receives <key>28</key> more for his birthday. How many cards does he have altogether?",
-    icon: '🐸',
-    nums: [47, 28],
-    op: '+',
-    answer: 75,
-    groupLabels: ['Cards already owned', 'Birthday cards'],
-    step1explain: "Neville starts with <strong>47</strong> Chocolate Frog cards. His friends add <strong>28</strong> more to his collection. We're joining two amounts together.",
-    step2explain: "Neville has 47 cards and gets 28 more. How many cards does he have in total?",
-    step3explain: "47 + 28: try rounding 28 up to 30, add to 47, then adjust back by subtracting the extra 2.",
-    hint1: "Neville ends up with more cards than he started with. Two quantities are being joined.",
-    hint2: "You are adding 47 cards and 28 more. The equation is: 47 + 28 = ?",
-    hint3: "47 + 28: 47 + 30 = 77, then 77 − 2 = 75.",
-  },
-  {
-    id: 10, category: 'subtraction',
-    text: "The Defence Against the Dark Arts classroom has <key>84</key> seats. Today only <key>57</key> students showed up. How many seats are empty?",
-    icon: '💺',
-    nums: [84, 57],
-    op: '-',
-    answer: 27,
-    groupLabels: ['Total seats', 'Students present'],
-    step1explain: "Picture a classroom with <strong>84</strong> seats. Only <strong>57</strong> students sit down. The rest of the seats are empty — we need to find how many.",
-    step2explain: "There are 84 seats total and 57 are occupied. How many seats are empty?",
-    step3explain: "84 − 57: try rounding 57 to 60, subtracting from 84, then adjusting for the 3 extra you removed.",
-    hint1: "Total seats minus occupied seats = empty seats. This is a 'difference' situation.",
-    hint2: "You are subtracting 57 filled seats from 84 total. The equation is: 84 − 57 = ?",
-    hint3: "84 − 57: 84 − 60 = 24, then add back 3: 24 + 3 = 27.",
-  },
-  {
-    id: 11, category: 'multiplication',
-    text: "The Hogwarts Great Hall has <key>4</key> house tables, each decorated with <key>15</key> golden goblets for the Start-of-Term Feast. How many goblets are there in total?",
-    icon: '🏆',
-    nums: [4, 15],
-    op: '×',
-    answer: 60,
-    groupLabels: ['Gryffindor table','Hufflepuff table','Ravenclaw table','Slytherin table'],
-    step1explain: "Four long tables gleam in the Great Hall — <strong>4</strong> tables each set with exactly <strong>15</strong> golden goblets. Equal groups mean we multiply!",
-    step2explain: "You have 4 tables and each has 15 goblets. How many goblets in total?",
-    step3explain: "4 × 15: split 15 into 10 + 5. Solve 4 × 10 and 4 × 5 separately, then add them together.",
-    hint1: "Each of the 4 tables has the exact same number of goblets. Equal groups → multiplication.",
-    hint2: "You have 4 equal groups of 15. The equation is: 4 × 15 = ?",
-    hint3: "4 × 15: 4 × 10 = 40, 4 × 5 = 20. 40 + 20 = 60.",
-  },
-  {
-    id: 12, category: 'division',
-    text: "Professor McGonagall has <key>48</key> pieces of enchanted chalk to share equally among <key>6</key> classrooms. How many pieces does each classroom receive?",
-    icon: '✏️',
-    nums: [48, 6],
-    op: '÷',
-    answer: 8,
-    groupLabels: ['Total chalk', 'Classrooms'],
-    step1explain: "There are <strong>48</strong> pieces of enchanted chalk. McGonagall divides them equally into <strong>6</strong> classrooms — same amount in every room.",
-    step2explain: "48 pieces of chalk shared equally into 6 classrooms. How many pieces per classroom?",
-    step3explain: "48 ÷ 6: think 'what times 6 equals 48?' Count up by 6s until you reach 48.",
-    hint1: "A total is shared equally. Equal sharing → division.",
-    hint2: "You are dividing 48 pieces into 6 equal groups. The equation is: 48 ÷ 6 = ?",
-    hint3: "6 × ? = 48. Count up: 6, 12, 18, 24, 30, 36, 42, 48 — that's 8 steps.",
-  },
-  {
-    id: 13, category: 'addition',
-    text: "Ron scores <key>36</key> points in the Gryffindor vs Hufflepuff Quidditch match. Harry then catches the Snitch, worth <key>150</key> bonus points. What is Gryffindor's total score?",
-    icon: '⚡',
-    nums: [36, 150],
-    op: '+',
-    answer: 186,
-    groupLabels: ['Goals scored', 'Snitch bonus'],
-    step1explain: "Gryffindor earns <strong>36</strong> from goals, then <strong>150</strong> from the Golden Snitch. We're adding both contributions to find the total.",
-    step2explain: "Gryffindor scored 36 points from goals and earned 150 for the Snitch. What is the total score?",
-    step3explain: "36 + 150: try adding the hundreds first, then the tens, then the ones. Combine all three partial sums.",
-    hint1: "Two scoring events are combined into one total. Addition!",
-    hint2: "You are adding 36 goal points and 150 Snitch points. The equation is: 36 + 150 = ?",
-    hint3: "36 + 150: 36 + 100 = 136, then 136 + 50 = 186.",
-  },
-  {
-    id: 14, category: 'subtraction',
-    text: "Gryffindor begins the week with <key>237</key> House Points. Professor Snape deducts <key>89</key> points for a potion explosion. How many points does Gryffindor have remaining?",
-    icon: '⭐',
-    nums: [237, 89],
-    op: '-',
-    answer: 148,
-    groupLabels: ['Starting points', 'Points deducted'],
-    step1explain: "Gryffindor has <strong>237</strong> shining House Points. Then Snape removes <strong>89</strong> of them. We need to find what remains.",
-    step2explain: "Gryffindor had 237 points and lost 89. How many points remain?",
-    step3explain: "237 − 89: try rounding 89 to 90, subtracting from 237, then adding back the 1 extra you subtracted.",
-    hint1: "A total is reduced when points are deducted. Find what remains after the removal.",
-    hint2: "You are subtracting 89 from 237. The equation is: 237 − 89 = ?",
-    hint3: "237 − 89: 237 − 90 = 147, then add 1 back: 147 + 1 = 148.",
-  },
-  {
-    id: 15, category: 'multiplication',
-    text: "Dobby knits <key>7</key> pairs of socks for Harry each week for <key>8</key> weeks straight. How many pairs of socks does Dobby knit altogether?",
-    icon: '🧦',
-    nums: [7, 8],
-    op: '×',
-    answer: 56,
-    groupLabels: null,
-    step1explain: "Dobby devotedly knits <strong>7</strong> pairs every week for <strong>8</strong> weeks. Each week is the same amount — 8 equal groups of 7.",
-    step2explain: "Dobby knits 7 pairs every week and does this for 8 weeks. What is the total?",
-    step3explain: "7 × 8: think of 7 groups of 8 (or 8 groups of 7 — same answer!). What do you get when you add 7 eight times?",
-    hint1: "The same amount is repeated every week. Repeated equal amounts → multiplication.",
-    hint2: "7 pairs per week for 8 weeks. The equation is: 7 × 8 = ?",
-    hint3: "7 × 8 = 56. Check: 7 × 4 = 28, and 28 × 2 = 56. ✓",
-  },
-  {
-    id: 16, category: 'division',
-    text: "Mrs. Weasley bakes <key>63</key> Cauldron Cakes and places them equally on <key>9</key> plates. How many cakes go on each plate?",
-    icon: '🎂',
-    nums: [63, 9],
-    op: '÷',
-    answer: 7,
-    groupLabels: ['Total cakes', 'Plates'],
-    step1explain: "Mrs. Weasley has lovingly baked <strong>63</strong> cakes spread evenly across <strong>9</strong> plates so every plate looks the same. Equal sharing = division.",
-    step2explain: "63 cakes shared equally across 9 plates. How many cakes per plate?",
-    step3explain: "63 ÷ 9: think 'what times 9 equals 63?' Work through your 9 times table.",
-    hint1: "The cakes are shared out equally. Equal sharing → division.",
-    hint2: "You are dividing 63 cakes into 9 equal plates. The equation is: 63 ÷ 9 = ?",
-    hint3: "9 × ? = 63. Count by 9s: 9, 18, 27, 36, 45, 54, 63 — that's 7 jumps.",
-  },
-  {
-    id: 17, category: 'addition',
-    text: "The Hogwarts first-year class has <key>119</key> students from magical families and <key>43</key> Muggle-born students. How many first-year students are there in total?",
-    icon: '🎓',
-    nums: [119, 43],
-    op: '+',
-    answer: 162,
-    groupLabels: ['Magical families', 'Muggle-born'],
-    step1explain: "Two groups of new students arrive — <strong>119</strong> from magical families and <strong>43</strong> Muggle-born. Together they fill the Great Hall.",
-    step2explain: "There are 119 from magical families and 43 Muggle-born. How many first-years altogether?",
-    step3explain: "119 + 43: try adding hundreds, then tens, then ones. Combine the three partial sums.",
-    hint1: "Two groups joining together to form one first-year class = addition.",
-    hint2: "You are combining 119 and 43 students. The equation is: 119 + 43 = ?",
-    hint3: "119 + 43: 119 + 40 = 159, then 159 + 3 = 162.",
-  },
-  {
-    id: 18, category: 'subtraction',
-    text: "Harry's Nimbus 2000 travels at <key>193</key> km/h. Draco's Nimbus 2001 travels at <key>215</key> km/h. How many km/h faster is the Nimbus 2001?",
-    icon: '🧹',
-    nums: [215, 193],
-    op: '-',
-    answer: 22,
-    groupLabels: ['Nimbus 2001 speed', 'Nimbus 2000 speed'],
-    step1explain: "We're comparing two speeds — Nimbus 2001 at <strong>215</strong> km/h vs Nimbus 2000 at <strong>193</strong> km/h. We want the <em>difference</em> between them.",
-    step2explain: "The Nimbus 2001 does 215 km/h and the Nimbus 2000 does 193 km/h. How much faster is the 2001?",
-    step3explain: "215 − 193: try counting up from 193 to 215. How many to reach 200? How many more to reach 215? Add those together.",
-    hint1: "We're comparing two amounts to find the gap between them. Comparison = subtraction.",
-    hint2: "You are finding the difference between 215 and 193. The equation is: 215 − 193 = ?",
-    hint3: "Count up: 193 + 7 = 200, 200 + 15 = 215. That's 7 + 15 = 22.",
-  },
-  {
-    id: 19, category: 'multiplication',
-    text: "The potions storeroom has <key>8</key> shelves. Each shelf holds <key>11</key> potion bottles. How many bottles are stored in total?",
-    icon: '🧴',
-    nums: [8, 11],
-    op: '×',
-    answer: 88,
-    groupLabels: null,
-    step1explain: "Picture <strong>8</strong> shelves in the dim potions room. Every single shelf holds exactly <strong>11</strong> bottles. Eight equal groups of eleven!",
-    step2explain: "There are 8 shelves and each holds 11 bottles. How many bottles total?",
-    step3explain: "8 × 11: split 11 into 10 + 1. Solve 8 × 10 and 8 × 1 separately, then add the two results.",
-    hint1: "Each shelf has the same number of bottles. Equal groups → multiply!",
-    hint2: "8 equal shelves of 11 bottles each. The equation is: 8 × 11 = ?",
-    hint3: "8 × 11: 8 × 10 = 80, 8 × 1 = 8. 80 + 8 = 88.",
-  },
-  {
-    id: 20, category: 'division',
-    text: "Professor Flitwick has <key>54</key> House Point tokens to award equally among <key>6</key> students who excelled in Charms. How many tokens does each student receive?",
-    icon: '✨',
-    nums: [54, 6],
-    op: '÷',
-    answer: 9,
-    groupLabels: ['Total tokens', 'Students'],
-    step1explain: "Flitwick has <strong>54</strong> sparkling tokens to share between <strong>6</strong> deserving students. Equal sharing = division!",
-    step2explain: "54 tokens shared equally among 6 students. How many tokens per student?",
-    step3explain: "54 ÷ 6: think 'what times 6 equals 54?' Work through your 6 times table.",
-    hint1: "Tokens are shared equally. Equal sharing → division.",
-    hint2: "You are dividing 54 tokens into 6 equal shares. The equation is: 54 ÷ 6 = ?",
-    hint3: "6 × ? = 54. Count by 6s: 6, 12, 18, 24, 30, 36, 42, 48, 54 — that's 9.",
-  },
-  {
-    id: 21, category: 'addition',
-    text: "Diagon Alley's Ollivander's sold <key>264</key> wands this year, while Gregorovitch's shop sold <key>137</key> wands. How many wands were sold across both shops?",
-    icon: '🪄',
-    nums: [264, 137],
-    op: '+',
-    answer: 401,
-    groupLabels: ["Ollivander's wands", "Gregorovitch's wands"],
-    step1explain: "Two shops both selling wands — <strong>264</strong> from one and <strong>137</strong> from the other. Adding their sales gives us the total.",
-    step2explain: "Ollivander's sold 264 wands and Gregorovitch's sold 137. How many were sold in total?",
-    step3explain: "264 + 137: add the hundreds (200 + 100), then tens (60 + 30), then ones (4 + 7). Combine all partial sums.",
-    hint1: "Two separate shops, each with their own sales. Combining = addition.",
-    hint2: "You are adding 264 and 137 together. The equation is: 264 + 137 = ?",
-    hint3: "264 + 137: 264 + 100 = 364, 364 + 37 = 401.",
-  },
-  {
-    id: 22, category: 'subtraction',
-    text: "The Room of Requirement held <key>312</key> students during the Battle of Hogwarts. During the evacuation, <key>178</key> students escaped. How many remained inside?",
-    icon: '🚪',
-    nums: [312, 178],
-    op: '-',
-    answer: 134,
-    groupLabels: ['Students inside', 'Students evacuated'],
-    step1explain: "The Room held <strong>312</strong> students. Then <strong>178</strong> escaped. We need to find how many were still inside after the evacuation.",
-    step2explain: "312 students inside and 178 escaped. How many remained?",
-    step3explain: "312 − 178: try rounding 178 to 180, subtracting from 312, then adjusting for what you over-subtracted.",
-    hint1: "Students are leaving the room. Total minus left = remaining. Subtraction!",
-    hint2: "You are subtracting 178 from 312. The equation is: 312 − 178 = ?",
-    hint3: "312 − 178: 312 − 180 = 132, then add 2 back: 132 + 2 = 134.",
-  },
-  {
-    id: 23, category: 'multiplication',
-    text: "Hagrid has <key>5</key> pumpkin patches. Each patch yields <key>16</key> pumpkins at harvest. How many pumpkins does Hagrid harvest in total?",
-    icon: '🎃',
-    nums: [5, 16],
-    op: '×',
-    answer: 80,
-    groupLabels: ['Patch 1','Patch 2','Patch 3','Patch 4','Patch 5'],
-    step1explain: "Hagrid tends to <strong>5</strong> pumpkin patches. Every patch produces exactly <strong>16</strong> pumpkins. Five equal groups of 16!",
-    step2explain: "5 patches each producing 16 pumpkins. What is the total harvest?",
-    step3explain: "5 × 16: split 16 into 10 + 6. Find 5 × 10 and 5 × 6 separately, then add those results.",
-    hint1: "Each patch produces the same amount. Repeated equal amounts = multiplication.",
-    hint2: "5 equal groups of 16 pumpkins each. The equation is: 5 × 16 = ?",
-    hint3: "5 × 16: 5 × 10 = 50, 5 × 6 = 30. 50 + 30 = 80.",
-  },
-  {
-    id: 24, category: 'division',
-    text: "Professor Trelawney has <key>44</key> students in Divination class. If <key>4</key> students share each crystal ball, how many crystal balls does she need to set out?",
-    icon: '🔮',
-    nums: [44, 4],
-    op: '÷',
-    answer: 11,
-    groupLabels: ['Total students', 'Students per ball'],
-    step1explain: "There are <strong>44</strong> Divination students and every group of <strong>4</strong> shares one crystal ball. We need to find how many balls Trelawney must set out.",
-    step2explain: "44 students need crystal balls, with 4 students per ball. How many crystal balls are needed?",
-    step3explain: "44 ÷ 4: think 'what times 4 equals 44?' Work through your 4 times table.",
-    hint1: "We're grouping 44 students into groups of 4. Number of groups → division.",
-    hint2: "You are dividing 44 students into groups of 4. The equation is: 44 ÷ 4 = ?",
-    hint3: "4 × ? = 44. Count by 4s: 4, 8, 12 … 40, 44 — that's 11.",
-  },
-  {
-    id: 25, category: 'addition',
-    text: "Honeydukes sold <key>356</key> Chocolate Frogs in the morning and <key>214</key> in the afternoon. How many were sold that day in total?",
-    icon: '🐸',
-    nums: [356, 214],
-    op: '+',
-    answer: 570,
-    groupLabels: ['Morning sales', 'Afternoon sales'],
-    step1explain: "Honeydukes is busy — <strong>356</strong> Frogs flew out in the morning and <strong>214</strong> more in the afternoon. Total sales for the day means adding both.",
-    step2explain: "The shop sold 356 Chocolate Frogs in the morning and 214 in the afternoon. How many sold in total?",
-    step3explain: "356 + 214: add hundreds (300 + 200), then tens (50 + 10), then ones (6 + 4). Combine the three partial sums.",
-    hint1: "Two periods of sales combined into a daily total. Combining = addition.",
-    hint2: "You are adding 356 and 214. The equation is: 356 + 214 = ?",
-    hint3: "356 + 214: 356 + 200 = 556, 556 + 14 = 570.",
-  },
-  {
-    id: 26, category: 'subtraction',
-    text: "Madam Hooch has <key>140</key> Bludgers stored in the equipment cupboard. The Hogwarts team uses <key>76</key> for practice matches this term. How many Bludgers are left?",
-    icon: '🏐',
-    nums: [140, 76],
-    op: '-',
-    answer: 64,
-    groupLabels: ['Stored Bludgers', 'Used Bludgers'],
-    step1explain: "The cupboard starts with <strong>140</strong> Bludgers. Practice sessions use up <strong>76</strong> of them. We need to find what's left.",
-    step2explain: "140 Bludgers in stock and 76 used. How many remain?",
-    step3explain: "140 − 76: try rounding 76 to 80, subtracting from 140, then adding back the extra you removed.",
-    hint1: "The stock goes down as Bludgers are used. Total minus used = remainder.",
-    hint2: "You are subtracting 76 from 140. The equation is: 140 − 76 = ?",
-    hint3: "140 − 76: 140 − 80 = 60, add 4 back: 60 + 4 = 64.",
-  },
-  {
-    id: 27, category: 'multiplication',
-    text: "The Hogwarts owlery has <key>9</key> rows of perches. Each row holds <key>13</key> owls. What is the maximum number of owls the owlery can hold?",
-    icon: '🦉',
-    nums: [9, 13],
-    op: '×',
-    answer: 117,
-    groupLabels: null,
-    step1explain: "The owlery has <strong>9</strong> rows of perches, and every row fits exactly <strong>13</strong> owls. Nine equal rows of thirteen!",
-    step2explain: "9 rows with 13 owls each. How many owls can the owlery hold in total?",
-    step3explain: "9 × 13: split 13 into 10 + 3. Solve 9 × 10 and 9 × 3 separately, then add those two results.",
-    hint1: "Every row holds the same number. Repeated equal-sized rows → multiplication.",
-    hint2: "9 equal rows of 13. The equation is: 9 × 13 = ?",
-    hint3: "9 × 13: 9 × 10 = 90, 9 × 3 = 27. 90 + 27 = 117.",
-  },
-  {
-    id: 28, category: 'division',
-    text: "Harry collects <key>96</key> Famous Witches and Wizards cards and puts them into an album with <key>8</key> cards per page. How many pages does he fill?",
-    icon: '🃏',
-    nums: [96, 8],
-    op: '÷',
-    answer: 12,
-    groupLabels: ['Total cards', 'Cards per page'],
-    step1explain: "Harry has <strong>96</strong> cards and fits <strong>8</strong> on each page. We need to find how many full pages he fills.",
-    step2explain: "96 cards with 8 cards per page. How many pages does he fill?",
-    step3explain: "96 ÷ 8: think 'what times 8 equals 96?' Work through your 8 times table.",
-    hint1: "Cards are placed in equal-sized groups (pages). Number of groups → division.",
-    hint2: "You are dividing 96 cards into groups of 8. The equation is: 96 ÷ 8 = ?",
-    hint3: "8 × ? = 96. Count by 8s: 8, 16, 24 … 80, 88, 96 — that's 12.",
-  },
-  {
-    id: 29, category: 'addition',
-    text: "Harry starts with <key>89</key> Famous Witches and Wizards cards and collects <key>46</key> more by the end of term. How many cards does he have at year's end?",
-    icon: '🃏',
-    nums: [89, 46],
-    op: '+',
-    answer: 135,
-    groupLabels: ['Cards by November', 'Cards after November'],
-    step1explain: "Harry's collection grows — <strong>89</strong> cards to start, then <strong>46</strong> more added later. We're combining both parts into a final total.",
-    step2explain: "Harry had 89 cards and collected 46 more. What is his total collection?",
-    step3explain: "89 + 46: try rounding 89 to 90, add 46, then adjust for the 1 extra you added.",
-    hint1: "The collection grows in two stages. Combining totals = addition.",
-    hint2: "You are adding 89 cards and 46 more. The equation is: 89 + 46 = ?",
-    hint3: "89 + 46: 90 + 46 = 136, then 136 − 1 = 135.",
-  },
-  {
-    id: 30, category: 'subtraction',
-    text: "The kitchens prepared <key>480</key> sausages for the Start-of-Term Feast. After dinner, only <key>97</key> sausages are left over. How many were eaten?",
-    icon: '🌭',
-    nums: [480, 97],
-    op: '-',
-    answer: 383,
-    groupLabels: ['Total sausages', 'Leftover sausages'],
-    step1explain: "The kitchens started with <strong>480</strong> sausages. After the feast, <strong>97</strong> remained. We need to find how many were devoured.",
-    step2explain: "480 sausages prepared and 97 leftover. How many were eaten?",
-    step3explain: "480 − 97: try rounding 97 to 100, subtracting from 480, then adding back the extra 3 you removed.",
-    hint1: "Start with the total, remove what's left = how many were used. That's subtraction.",
-    hint2: "You are subtracting 97 from 480. The equation is: 480 − 97 = ?",
-    hint3: "480 − 97: 480 − 100 = 380, then add 3 back: 380 + 3 = 383.",
-  },
-  {
-    id: 31, category: 'multiplication',
-    text: "Each student in detention carries <key>7</key> textbooks. There are <key>12</key> students in the group. How many textbooks are there between them?",
-    icon: '📖',
-    nums: [7, 12],
-    op: '×',
-    answer: 84,
-    groupLabels: null,
-    step1explain: "Every student lugs <strong>7</strong> textbooks. With <strong>12</strong> students in detention, we have 12 equal groups of 7.",
-    step2explain: "12 students each carrying 7 textbooks. How many textbooks in total?",
-    step3explain: "7 × 12: split 12 into 10 + 2. Solve 7 × 10 and 7 × 2 separately, then add the results.",
-    hint1: "Every student carries the same number. Repeated equal amounts → multiply!",
-    hint2: "7 books per student, 12 students. The equation is: 7 × 12 = ?",
-    hint3: "7 × 12: 7 × 10 = 70, 7 × 2 = 14. 70 + 14 = 84.",
-  },
-  {
-    id: 32, category: 'division',
-    text: "Dumbledore awards <key>81</key> gold stars to reward outstanding students. He gives <key>9</key> stars to each deserving student. How many students will receive stars?",
-    icon: '⭐',
-    nums: [81, 9],
-    op: '÷',
-    answer: 9,
-    groupLabels: ['Total stars', 'Stars per student'],
-    step1explain: "Dumbledore has <strong>81</strong> gold stars. Each student gets <strong>9</strong> stars. We need to find how many students will be rewarded.",
-    step2explain: "81 gold stars given out at 9 stars per student. How many students receive stars?",
-    step3explain: "81 ÷ 9: think 'what times 9 equals 81?' Work through your 9 times table.",
-    hint1: "We know the total and the per-person amount. Dividing gives the number of people.",
-    hint2: "You are dividing 81 stars by 9 per student. The equation is: 81 ÷ 9 = ?",
-    hint3: "9 × ? = 81. Count by 9s: 9, 18, 27 … 72, 81 — that's 9 steps.",
   },
 ];
 
@@ -1021,14 +818,54 @@ function init() {
   loadProblem();
 }
 
+
+
+let msBuildMode = 'manual'; // 'auto' or 'manual'
+
+function toggleMsBuildMode() {
+  msBuildMode = document.getElementById('msBuildModeSelect').value;
+  const wasOpen = document.getElementById('msPartsContainer').style.display !== 'none';
+  msLoadProblem();
+  if (wasOpen) msStart();
+}
+
+let currentMode = 'single';
+
+function isSmallBasicProblem(p) {
+  if (currentMode === 'single') return Math.max(...p.nums) <= 9;
+  return Math.max(...p.nums) <= 99 && p.answer <= 99;
+}
+
+function isSmallTaggedProblem(p) {
+  const matches = [...p.text.matchAll(/<key>(\d+)<\/key>/g)];
+  if (matches.length === 0) return true;
+  const nums = matches.map(m => Number(m[1]));
+  if (currentMode === 'single') return nums.every(n => n <= 9);
+  return nums.every(n => n <= 99);
+}
+
+function changeMode() {
+  currentMode = document.getElementById('numberMode').value;
+  buildQueue();
+  loadProblem();
+  msInit();
+  advInit();
+}
+
 function buildQueue() {
-  let pool = currentCategory === 'all' ? [...PROBLEMS] : PROBLEMS.filter(p => p.category === currentCategory);
-  // shuffle
+  let pool = currentCategory === 'all'
+    ? [...PROBLEMS]
+    : PROBLEMS.filter(p => p.category === currentCategory);
+
+  if (currentMode === 'small' || currentMode === 'single') {
+    pool = pool.filter(isSmallBasicProblem);
+  }
+
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
   }
-  problemQueue = pool.slice(0, 5);
+  problemQueue = pool;
   queueIndex = 0;
 }
 
@@ -1130,14 +967,14 @@ function renderViz(animate) {
   const area = document.getElementById('vizArea');
   area.innerHTML = '';
 
-  const MAX_ICONS = 500; // always draw all icons
+  const MAX_ICONS = 50; // show all icons for current problem set
 
   if (p.op === '+') {
     // Two groups
     for (let g = 0; g < 2; g++) {
       const n = p.nums[g];
       const label = p.groupLabels ? p.groupLabels[g] : `Group ${g+1}`;
-      const showN = n;
+      const showN = Math.min(n, MAX_ICONS);
       const group = document.createElement('div');
       group.className = 'viz-group';
       group.innerHTML = `<div class="viz-group-label">${label}<br><span class="num-badge">${n}</span></div>`;
@@ -1149,6 +986,12 @@ function renderViz(animate) {
         ic.style.animationDelay = animate ? `${i * 40}ms` : '0';
         ic.textContent = p.icon;
         icons.appendChild(ic);
+      }
+      if (n > MAX_ICONS) {
+        const more = document.createElement('div');
+        more.style.cssText = 'font-size:1.3rem;font-weight:900;color:var(--accent);font-family:"Space Mono",monospace;display:block;text-align:center;width:100%;padding:4px 0;letter-spacing:1px';
+        more.textContent = `+ ${n - MAX_ICONS} more`;
+        icons.appendChild(more);
       }
       group.appendChild(icons);
       area.appendChild(group);
@@ -1168,7 +1011,7 @@ function renderViz(animate) {
 
   } else if (p.op === '-') {
     const [total, removed] = p.nums;
-    const showTotal = total;
+    const showTotal = Math.min(total, MAX_ICONS);
     const group = document.createElement('div');
     group.className = 'viz-group';
     group.innerHTML = `<div class="viz-group-label">${p.groupLabels ? p.groupLabels[0] : 'Start'}<br><span class="num-badge">${total}</span></div>`;
@@ -1184,6 +1027,12 @@ function renderViz(animate) {
       ic.textContent = p.icon;
       icons.appendChild(ic);
     }
+    if (total > MAX_ICONS) {
+      const more = document.createElement('div');
+      more.style.cssText = 'font-size:1.3rem;font-weight:900;color:var(--accent);font-family:"Space Mono",monospace;display:block;width:100%;padding:4px 0;letter-spacing:1px';
+      more.textContent = `+ ${total - MAX_ICONS} more`;
+      icons.appendChild(more);
+    }
     group.appendChild(icons);
     area.appendChild(group);
     const info = document.createElement('div');
@@ -1193,8 +1042,8 @@ function renderViz(animate) {
 
   } else if (p.op === '×') {
     const [groups, perGroup] = p.nums;
-    const showGroups = groups;
-    const showPer = perGroup;
+    const showGroups = Math.min(groups, 12);
+    const showPer = Math.min(perGroup, 12);
     for (let g = 0; g < showGroups; g++) {
       const label = p.groupLabels ? p.groupLabels[g] || `Group ${g+1}` : `Group ${g+1}`;
       const grp = document.createElement('div');
@@ -1209,15 +1058,27 @@ function renderViz(animate) {
         s.textContent = p.icon;
         ic.appendChild(s);
       }
+      if (perGroup > showPer) {
+        const m = document.createElement('div');
+        m.style.cssText = 'font-size:1.1rem;font-weight:900;color:var(--accent);font-family:"Space Mono",monospace;text-align:center';
+        m.textContent = `+${perGroup-showPer}`;
+        ic.appendChild(m);
+      }
       grp.appendChild(ic);
       area.appendChild(grp);
+    }
+    if (groups > showGroups) {
+      const m = document.createElement('div');
+      m.style.cssText = 'font-size:1.2rem;font-weight:900;color:var(--accent);font-family:"Space Mono",monospace;font-style:normal;align-self:center';
+      m.textContent = `+${groups - showGroups} more groups`;
+      area.appendChild(m);
     }
 
   } else if (p.op === '÷') {
     const [total, divisor] = p.nums;
 
     // --- Row 1: total items pool ---
-    const showTotal = total;
+    const showTotal = Math.min(total, MAX_ICONS);
     const poolGroup = document.createElement('div');
     poolGroup.className = 'viz-group';
     poolGroup.style.cssText = 'width:100%';
@@ -1230,6 +1091,12 @@ function renderViz(animate) {
       s.style.animationDelay = animate ? `${i * 35}ms` : '0';
       s.textContent = p.icon;
       poolIcons.appendChild(s);
+    }
+    if (total > MAX_ICONS) {
+      const m = document.createElement('div');
+      m.style.cssText = 'font-size:1.3rem;font-weight:900;color:var(--accent);font-family:"Space Mono",monospace;padding:4px 0;letter-spacing:1px';
+      m.textContent = `+ ${total - MAX_ICONS} more`;
+      poolIcons.appendChild(m);
     }
     poolGroup.appendChild(poolIcons);
     area.appendChild(poolGroup);
@@ -1248,7 +1115,7 @@ function renderViz(animate) {
     // --- Row 2: divisor groups (each shown as a labelled box) ---
     const groupsRow = document.createElement('div');
     groupsRow.style.cssText = 'width:100%;display:flex;flex-wrap:wrap;gap:8px;justify-content:center';
-    const showGroups = divisor;
+    const showGroups = Math.min(divisor, 10);
     for (let g = 0; g < showGroups; g++) {
       const vial = document.createElement('div');
       vial.style.cssText = `
@@ -1272,6 +1139,12 @@ function renderViz(animate) {
       vial.appendChild(label);
       vial.appendChild(qmark);
       groupsRow.appendChild(vial);
+    }
+    if (divisor > showGroups) {
+      const m = document.createElement('div');
+      m.style.cssText = 'font-size:0.8rem;color:var(--muted);font-style:italic;align-self:center';
+      m.textContent = `…${divisor - showGroups} more`;
+      groupsRow.appendChild(m);
     }
     area.appendChild(groupsRow);
 
@@ -1326,13 +1199,17 @@ function renderOpSelector() {
 function renderEqBuilder() {
   const p = currentProblem;
   const el = document.getElementById('eqBuilder');
-  // Show: [num1] [op?] [num2] = [?]
   el.innerHTML = `
-    <div class="eq-num-box">${p.nums[0]}</div>
-    <div class="eq-op" id="opDisplay" style="min-width:36px;text-align:center;color:var(--muted)">?</div>
-    <div class="eq-num-box">${p.nums[1]}</div>
-    <div class="eq-op">=</div>
-    <div class="eq-num-box eq-unknown">?</div>
+    <div class="eq-stack-wrap">
+      <div class="eq-stack">
+        <div class="eq-num-box top-num">${p.nums[0]}</div>
+        <div class="stack-op" id="opDisplay" style="color:var(--muted)">?</div>
+        <div class="eq-num-box bottom-num">${p.nums[1]}</div>
+        <div class="answer-line">
+          <div class="eq-num-box eq-unknown">?</div>
+        </div>
+      </div>
+    </div>
   `;
 }
 
@@ -1379,14 +1256,23 @@ function renderSolveRow() {
   const el = document.getElementById('eqSolve');
   const needsBreakdown = p.op === '×';
   el.innerHTML = `
-    <div class="eq-num-box">${p.nums[0]}</div>
-    <div class="eq-op">${p.op}</div>
-    <div class="eq-num-box">${p.nums[1]}</div>
-    <div class="eq-op">=</div>
-    <input class="eq-input" id="answerInput" type="number" placeholder="?" autocomplete="off"
-      onkeydown="if(event.key==='Enter') checkAnswer()">
-    ${needsBreakdown ? `<button class="hint-btn" id="solveBreakdownBtn" onclick="renderSolveBreakdown()" style="margin-left:10px;border-color:var(--accent);color:var(--accent)">🔬 Break it Down</button>` : ''}
+    <div class="eq-stack-wrap">
+      <div class="eq-stack">
+        <div class="eq-num-box top-num">${p.nums[0]}</div>
+        <div class="stack-op">${p.op}</div>
+        <div class="eq-num-box bottom-num">${p.nums[1]}</div>
+        <div class="answer-line">
+          <input class="eq-input" id="answerInput" type="number" placeholder="?" autocomplete="off"
+            onkeydown="if(event.key==='Enter') checkAnswer()">
+        </div>
+      </div>
+      ${needsBreakdown ? `<button class="hint-btn" id="solveBreakdownBtn" onclick="renderSolveBreakdown()" style="border-color:var(--accent);color:var(--accent)">🔬 Break it Down</button>` : ''}
+    </div>
   `;
+
+  let oldArea = document.getElementById('solveBreakdownArea');
+  if (oldArea) oldArea.remove();
+
   if (needsBreakdown) {
     const breakArea = document.createElement('div');
     breakArea.id = 'solveBreakdownArea';
@@ -1823,44 +1709,159 @@ function skipProblem() {
 // =============================================
 const MS_PROBLEMS = [
   {
-    id: 'ms1',
-    text: "Madam Pomfrey needs to brew enough Skele-Gro for the Hospital Wing. She brews <key>9</key> bottles per batch and needs to make <key>4</key> batches. Each bottle costs <key>6</key> Galleons in ingredients. She has a budget of <key>250</key> Galleons. How much will she have left after paying for the order?",
+    id: 'ms7',
+    text: "Ron finds <key>6</key> Bertie Bott's beans in the morning and <key>3</key> more in the afternoon. He shares all his beans equally among his <key>3</key> friends.",
+    parts: [
+      {
+        label: 'Part (a)', question: "How many beans did Ron find in total?",
+        explain: "Find the total amount of beans found in the morning and afternoon.",
+        hint_op: "Combine the two amounts. The equation is: 6 + 3 = ?", hint_solve: "6 + 3 = 9.",
+        op: '+', nums: [6, 3], answer: 9, answerSentence: "Ron found ___ beans.", icon: '🍬'
+      },
+      {
+        label: 'Part (b)', question: "If he shares the total beans equally among 3 friends, how many does each get?",
+        explain: "Take the total (9) and divide by the number of friends (3).",
+        hint_op: "Divide the total beans by 3. The equation is: 9 ÷ 3 = ?", hint_solve: "9 ÷ 3 = 3.",
+        op: '÷', nums: [9, 3], answer: 3, answerSentence: "Each friend gets ___ beans.", icon: '🍬'
+      }
+    ]
+  },
+  {
+    id: 'ms8',
+    text: "Hermione reads <key>2</key> chapters of her Charms book every day for <key>4</key> days. Then she reads <key>1</key> more chapter on Friday.",
+    parts: [
+      {
+        label: 'Part (a)', question: "How many chapters did she read in the first 4 days?",
+        explain: "She read 2 chapters each day for 4 days.",
+        hint_op: "Multiply the chapters per day by the number of days. The equation is: 2 × 4 = ?", hint_solve: "2 × 4 = 8.",
+        op: '×', nums: [2, 4], answer: 8, answerSentence: "She read ___ chapters.", icon: '📖'
+      },
+      {
+        label: 'Part (b)', question: "With the extra chapter on Friday, how many chapters did she read in total?",
+        explain: "Add Friday's chapter to the amount she already read.",
+        hint_op: "Add 1 to the previous total. The equation is: 8 + 1 = ?", hint_solve: "8 + 1 = 9.",
+        op: '+', nums: [8, 1], answer: 9, answerSentence: "She read ___ chapters in total.", icon: '📖'
+      }
+    ]
+  },
+  {
+    id: 'ms4',
+    text: "Hagrid grows enormous pumpkins for the Halloween feast. He has <key>3</key> patches, and each patch produces <key>15</key> pumpkins. Before the feast, he gives away <key>12</key> pumpkins to the villagers. How many pumpkins does Hagrid have left for Hogwarts?",
     parts: [
       {
         label: 'Part (a)',
-        question: "How many bottles does Madam Pomfrey brew in total?",
-        explain: "She brews 9 bottles per batch and makes 4 batches. Find the total number of bottles.",
-        hint_op: "4 equal batches of 9 bottles each. The equation is: 4 × 9 = ?",
-        hint_solve: "4 × 9 = 36 bottles total.",
-        op: '×', nums: [4, 9], answer: 36,
-        answerSentence: "Madam Pomfrey brews ___ bottles in total.",
-        icon: '🧪', groupLabels: ['Batch 1','Batch 2','Batch 3','Batch 4'],
+        question: "How many pumpkins does Hagrid grow in total across all patches?",
+        explain: "Find the total amount of pumpkins grown. He has 3 patches of 15 pumpkins.",
+        hint_op: "You have 3 equal groups of 15. The equation is: 3 × 15 = ?",
+        hint_solve: "3 × 15: 3 × 10 = 30 and 3 × 5 = 15. 30 + 15 = 45.",
+        op: '×', nums: [3, 15], answer: 45,
+        answerSentence: "Hagrid grows ___ pumpkins.",
+        icon: '🎃', groupLabels: ['Patch 1','Patch 2','Patch 3'],
       },
       {
         label: 'Part (b)',
-        question: "How many Galleons does the entire order cost?",
-        explain: "She has 36 bottles (from Part a) and each bottle costs 6 Galleons in ingredients.",
-        hint_op: "36 bottles at 6 Galleons each. The equation is: 36 × 6 = ?",
-        hint_solve: "36 × 6: try 30 × 6 = 180, then 6 × 6 = 36. Add them: 180 + 36 = 216.",
-        op: '×', nums: [36, 6], answer: 216,
-        answerSentence: "The entire order costs ___ Galleons.",
-        icon: '🪙', groupLabels: null,
+        question: "Hagrid gives away 12 pumpkins. How many are left for Hogwarts?",
+        explain: "He grew 45 pumpkins (from Part a), but gives 12 of them away.",
+        hint_op: "Take the total and subtract the ones given away. The equation is: 45 - 12 = ?",
+        hint_solve: "45 - 12 = 33 pumpkins left for Hogwarts.",
+        op: '-', nums: [45, 12], answer: 33,
+        answerSentence: "He has ___ pumpkins left for the feast.",
+        icon: '🎃', groupLabels: ['Total grown','Given away'],
+      }
+    ]
+  },
+  {
+    id: 'ms5',
+    text: "Professor Lupin is teaching Defense Against the Dark Arts. He captures <key>5</key> Boggarts and puts them in wardrobes. To banish one Boggart, students must successfully cast the Riddikulus charm <key>3</key> times. So far, the class has successfully cast the charm <key>8</key> times. How many more successful charms are needed?",
+    parts: [
+      {
+        label: 'Part (a)',
+        question: "How many successful Riddikulus charms are needed to banish all the Boggarts?",
+        explain: "Find the total charms required. There are 5 Boggarts, requiring 3 charms each.",
+        hint_op: "You have 5 equal groups of 3 charms. The equation is: 5 × 3 = ?",
+        hint_solve: "5 × 3 = 15 successful charms needed.",
+        op: '×', nums: [5, 3], answer: 15,
+        answerSentence: "The class needs ___ successful charms.",
+        icon: '✨', groupLabels: ['Boggart 1','Boggart 2','Boggart 3','Boggart 4','Boggart 5'],
+      },
+      {
+        label: 'Part (b)',
+        question: "The class cast 8 successful charms. How many more do they need?",
+        explain: "They need 15 charms total (from Part a), but have already cast 8 of them.",
+        hint_op: "Subtract the charms already cast from the total needed. The equation is: 15 - 8 = ?",
+        hint_solve: "15 - 8 = 7 more charms needed.",
+        op: '-', nums: [15, 8], answer: 7,
+        answerSentence: "They need ___ more successful charms.",
+        icon: '✨', groupLabels: ['Total needed','Already cast'],
+      }
+    ]
+  },
+  {
+    id: 'ms6',
+    text: "The Hogwarts kitchens are preparing meat pies. The house-elves bake <key>60</key> pies on Monday and <key>36</key> pies on Tuesday. They want to arrange all these pies evenly onto <key>8</key> serving platters for the Great Hall. How many pies go on each platter?",
+    parts: [
+      {
+        label: 'Part (a)',
+        question: "How many meat pies did the house-elves bake in total over both days?",
+        explain: "Find the combined amount of pies baked on Monday and Tuesday.",
+        hint_op: "Combine Monday's pies with Tuesday's pies. The equation is: 60 + 36 = ?",
+        hint_solve: "60 + 36 = 96 meat pies.",
+        op: '+', nums: [60, 36], answer: 96,
+        answerSentence: "The house-elves baked ___ pies in total.",
+        icon: '🥧', groupLabels: ['Monday pies','Tuesday pies'],
+      },
+      {
+        label: 'Part (b)',
+        question: "If they arrange all the pies onto 8 serving platters, how many go on each platter?",
+        explain: "They have 96 pies total (from Part a), split equally across 8 platters.",
+        hint_op: "Split the total pies into 8 equal groups. The equation is: 96 ÷ 8 = ?",
+        hint_solve: "96 ÷ 8: think 8 × 10 = 80, 8 × 2 = 16, so 10 + 2 = 12 pies.",
+        op: '÷', nums: [96, 8], answer: 12,
+        answerSentence: "Each platter gets ___ meat pies.",
+        icon: '🍽️', groupLabels: ['Total pies','Serving platters'],
+      }
+    ]
+  }
+,
+  {
+    id: 'ms1',
+    text: "Madam Pomfrey is preparing Healing Potions for the Hospital Wing. She can brew <key>48</key> doses of Healing Potion in <key>6</key> hours. Each dose costs <key>3</key> Galleons worth of ingredients. Madam Pomfrey has a budget of <key>100</key> Galleons. How much more does she need?",
+    parts: [
+      {
+        label: 'Part (a)',
+        question: "How many doses of Healing Potion does Madam Pomfrey brew per hour?",
+        explain: "Find the rate per hour. She brews 48 doses across 6 hours.",
+        hint_op: "You are distributing 48 doses equally across 6 hours. The equation is: 48 ÷ 6 = ?",
+        hint_solve: "48 ÷ 6: think 6 × ? = 48. Since 6 × 8 = 48, the answer is 8.",
+        op: '÷', nums: [48, 6], answer: 8,
+        answerSentence: "Madam Pomfrey brews ___ doses per hour.",
+        icon: '🧪', groupLabels: ['Total doses', 'Hours'],
+      },
+      {
+        label: 'Part (b)',
+        question: "How many Galleons does it cost to brew one full hour's worth of potions?",
+        explain: "She brews 8 doses per hour (from Part a), and each dose costs 3 Galleons.",
+        hint_op: "You have 8 doses and each costs 3 Galleons. The equation is: 8 × 3 = ?",
+        hint_solve: "8 × 3 = 24 Galleons per hour.",
+        op: '×', nums: [8, 3], answer: 24,
+        answerSentence: "One hour of brewing costs ___ Galleons.",
+        icon: '🪙', groupLabels: ['Dose 1','Dose 2','Dose 3','Dose 4','Dose 5','Dose 6','Dose 7','Dose 8'],
       },
       {
         label: 'Part (c)',
-        question: "Madam Pomfrey has 250 Galleons set aside for potions. How many Galleons will she have left after this order?",
-        explain: "The order costs 216 Galleons (from Part b). She has 250 Galleons available.",
-        hint_op: "Remaining = 250 − 216 = ?",
-        hint_solve: "250 − 216: count up from 216 → 220 is 4, then 220 → 250 is 30. Total: 4 + 30 = 34.",
-        op: '-', nums: [250, 216], answer: 34,
-        answerSentence: "Madam Pomfrey will have ___ Galleons remaining.",
-        icon: '💰', groupLabels: ['Budget', 'Order cost'],
+        question: "Madam Pomfrey has a budget of 100 Galleons. How much more does she need to cover one hour of brewing?",
+        explain: "One hour costs 24 Galleons (from Part b). Her budget is 100 Galleons. Find the shortfall.",
+        hint_op: "Shortfall = cost − budget = 24 − 100? Wait — is the cost MORE than the budget? Compare first. The equation is: 100 − 24 = ?",
+        hint_solve: "100 − 24 = 76. Her budget actually covers it! She has 76 Galleons left over.",
+        op: '-', nums: [100, 24], answer: 76,
+        answerSentence: "Madam Pomfrey has ___ Galleons remaining after one hour of brewing.",
+        icon: '💰', groupLabels: ['Budget', 'Cost'],
       },
     ],
   },
   {
     id: 'ms2',
-    text: "Hagrid is feeding magical creatures. He has <key>3</key> Hippogriffs and <key>4</key> Nifflers to feed each day. Hippogriffs each eat <key>6</key> ferrets a day. Nifflers each eat <key>3</key> grubs a day. How many food items does Hagrid need in total each day?",
+    text: "Hagrid is feeding magical creatures. He has <key>3</key> Hippogriffs and <key>4</key> Nifflers to feed each day. Hippogriffs each eat <key>6</key> ferrets a day. Nifflers each eat <key>3</key> grubs a day. How many food items does Hagrid need to prepare in total each day?",
     parts: [
       {
         label: 'Part (a)',
@@ -1896,7 +1897,7 @@ const MS_PROBLEMS = [
   },
   {
     id: 'ms3',
-    text: "The Hogwarts Express has <key>8</key> carriages. Each carriage seats <key>24</key> students. This year <key>163</key> are returning students. How many seats are available for new first-years?",
+    text: "The Hogwarts Express carries students to school. The train has <key>8</key> carriages. Each carriage seats <key>24</key> students. This year <key>163</key> students are returning students.",
     parts: [
       {
         label: 'Part (a)',
@@ -1911,625 +1912,13 @@ const MS_PROBLEMS = [
       },
       {
         label: 'Part (b)',
-        question: "How many seats will be taken by new first-years if the train is full?",
+        question: "How many of the seats will be taken by new first-year students if the total capacity is filled?",
         explain: "The train fits 192 students total and 163 are returning. The rest must be new first-years.",
         hint_op: "New students = total capacity − returning students = 192 − 163 = ?",
         hint_solve: "192 − 163: think 192 − 160 = 32, then 32 − 3 = 29.",
         op: '-', nums: [192, 163], answer: 29,
         answerSentence: "___ seats will be taken by new first-year students.",
         icon: '🎓', groupLabels: ['Total seats', 'Returning students'],
-      },
-    ],
-  },
-  {
-    id: 'ms4',
-    text: "Professor McGonagall is awarding House Points. Gryffindor students earned <key>9</key> points each in Transfiguration and there are <key>6</key> students. Slytherin earned <key>7</key> points each and has <key>8</key> students. How many more points does Slytherin have than Gryffindor?",
-    parts: [
-      {
-        label: 'Part (a)',
-        question: "How many House Points did the Gryffindor students earn in total?",
-        explain: "6 Gryffindor students each earned 9 points in Transfiguration.",
-        hint_op: "6 equal groups of 9 points. The equation is: 6 × 9 = ?",
-        hint_solve: "6 × 9 = 54 points for Gryffindor.",
-        op: '×', nums: [6, 9], answer: 54,
-        answerSentence: "Gryffindor earned ___ House Points in total.",
-        icon: '🦁', groupLabels: ['Student 1','Student 2','Student 3','Student 4','Student 5','Student 6'],
-      },
-      {
-        label: 'Part (b)',
-        question: "How many House Points did the Slytherin students earn in total?",
-        explain: "8 Slytherin students each earned 7 points.",
-        hint_op: "8 equal groups of 7 points. The equation is: 8 × 7 = ?",
-        hint_solve: "8 × 7 = 56 points for Slytherin.",
-        op: '×', nums: [8, 7], answer: 56,
-        answerSentence: "Slytherin earned ___ House Points in total.",
-        icon: '🐍', groupLabels: ['Student 1','Student 2','Student 3','Student 4','Student 5','Student 6','Student 7','Student 8'],
-      },
-      {
-        label: 'Part (c)',
-        question: "By how many points is Slytherin ahead of Gryffindor?",
-        explain: "Gryffindor earned 54 points (Part a) and Slytherin earned 56 points (Part b). Find the difference.",
-        hint_op: "Difference = Slytherin − Gryffindor = 56 − 54 = ?",
-        hint_solve: "56 − 54 = 2. Slytherin is just 2 points ahead!",
-        op: '-', nums: [56, 54], answer: 2,
-        answerSentence: "Slytherin is ahead by ___ House Points.",
-        icon: '⭐', groupLabels: ['Slytherin', 'Gryffindor'],
-      },
-    ],
-  },
-  {
-    id: 'ms5',
-    text: "The Gryffindor Quidditch team practises <key>5</key> times a week. Each session lasts <key>90</key> minutes. A full season lasts <key>3</key> weeks. The pitch is shared with <key>4</key> other house teams who each train for the same total time. How many minutes of pitch time are used across all 5 teams?",
-    parts: [
-      {
-        label: 'Part (a)',
-        question: "How many minutes does Gryffindor practise in one week?",
-        explain: "Gryffindor trains 5 times a week and each session is 90 minutes.",
-        hint_op: "5 equal sessions of 90 minutes each. The equation is: 5 × 90 = ?",
-        hint_solve: "5 × 90 = 450 minutes per week.",
-        op: '×', nums: [5, 90], answer: 450,
-        answerSentence: "Gryffindor practises ___ minutes in one week.",
-        icon: '🧹', groupLabels: null,
-      },
-      {
-        label: 'Part (b)',
-        question: "How many minutes does Gryffindor practise across the full 3-week season?",
-        explain: "They do 450 minutes per week (from Part a) and train for 3 weeks.",
-        hint_op: "3 equal weeks of 450 minutes. The equation is: 3 × 450 = ?",
-        hint_solve: "3 × 450: think 3 × 400 = 1200, then 3 × 50 = 150. Total: 1350 minutes.",
-        op: '×', nums: [3, 450], answer: 1350,
-        answerSentence: "Gryffindor uses ___ minutes of pitch time over the season.",
-        icon: '⏱️', groupLabels: ['Week 1','Week 2','Week 3'],
-      },
-      {
-        label: 'Part (c)',
-        question: "All 5 house teams use the pitch for the same number of minutes. How many total pitch-minutes are used across the whole season?",
-        explain: "Gryffindor used 1350 minutes (from Part b) and all 5 teams use the same amount.",
-        hint_op: "5 equal teams of 1350 minutes each. The equation is: 5 × 1350 = ?",
-        hint_solve: "5 × 1350: 5 × 1000 = 5000, 5 × 300 = 1500, 5 × 50 = 250. Total: 5000 + 1500 + 250 = 6750.",
-        op: '×', nums: [5, 1350], answer: 6750,
-        answerSentence: "___ total pitch-minutes are used across all 5 teams.",
-        icon: '🏟️', groupLabels: ['Gryffindor','Hufflepuff','Ravenclaw','Slytherin','Other'],
-      },
-    ],
-  },
-  {
-    id: 'ms6',
-    text: "Honeydukes makes Chocolate Frogs in batches. One batch produces <key>36</key> frogs. They made <key>4</key> batches this morning but <key>27</key> frogs were damaged and had to be discarded. How many sellable Frogs remain?",
-    parts: [
-      {
-        label: 'Part (a)',
-        question: "How many Chocolate Frogs were made in total this morning?",
-        explain: "Honeydukes made 4 batches of 36 frogs each.",
-        hint_op: "4 equal batches of 36. The equation is: 4 × 36 = ?",
-        hint_solve: "4 × 36: 4 × 30 = 120, 4 × 6 = 24. Total: 120 + 24 = 144.",
-        op: '×', nums: [4, 36], answer: 144,
-        answerSentence: "___ Chocolate Frogs were produced this morning.",
-        icon: '🐸', groupLabels: ['Batch 1','Batch 2','Batch 3','Batch 4'],
-      },
-      {
-        label: 'Part (b)',
-        question: "How many Chocolate Frogs are available to sell after discarding the damaged ones?",
-        explain: "144 frogs were made (from Part a) but 27 were damaged. How many are left to sell?",
-        hint_op: "Sellable = total − damaged = 144 − 27 = ?",
-        hint_solve: "144 − 27: 144 − 30 = 114, then add 3 back: 117.",
-        op: '-', nums: [144, 27], answer: 117,
-        answerSentence: "___ Chocolate Frogs are available to sell.",
-        icon: '🐸', groupLabels: ['Total frogs', 'Damaged frogs'],
-      },
-    ],
-  },
-  {
-    id: 'ms7',
-    text: "The Hogwarts owlery has <key>96</key> owls. The owls are organised into <key>8</key> equal flights. Gryffindor house is allocated <key>3</key> of these flights. How many owls are left for the other houses?",
-    parts: [
-      {
-        label: 'Part (a)',
-        question: "How many owls are in each flight?",
-        explain: "96 owls are divided equally into 8 flights.",
-        hint_op: "96 owls split into 8 equal groups. The equation is: 96 ÷ 8 = ?",
-        hint_solve: "96 ÷ 8 = 12 owls per flight.",
-        op: '÷', nums: [96, 8], answer: 12,
-        answerSentence: "Each flight contains ___ owls.",
-        icon: '🦉', groupLabels: ['Total owls', 'Flights'],
-      },
-      {
-        label: 'Part (b)',
-        question: "How many owls does Gryffindor receive across their 3 flights?",
-        explain: "Each flight has 12 owls (from Part a) and Gryffindor receives 3 flights.",
-        hint_op: "3 equal flights of 12 owls each. The equation is: 3 × 12 = ?",
-        hint_solve: "3 × 12 = 36 owls for Gryffindor.",
-        op: '×', nums: [3, 12], answer: 36,
-        answerSentence: "Gryffindor receives ___ owls in total.",
-        icon: '🦉', groupLabels: ['Flight 1','Flight 2','Flight 3'],
-      },
-      {
-        label: 'Part (c)',
-        question: "How many owls remain for the other three houses?",
-        explain: "There are 96 owls in the owlery and Gryffindor has taken 36 (from Part b). Subtract to find what's left.",
-        hint_op: "Remaining = total − Gryffindor's share = 96 − 36 = ?",
-        hint_solve: "96 − 36: 96 − 30 = 66, then 66 − 6 = 60.",
-        op: '-', nums: [96, 36], answer: 60,
-        answerSentence: "___ owls remain for the other houses.",
-        icon: '🦉', groupLabels: ['Total owls', "Gryffindor's owls"],
-      },
-    ],
-  },
-
-  // ── ms1 variants ──────────────────────────────────────────────
-  {
-    id: 'ms1b',
-    text: "Madam Pomfrey needs to brew Pepper-Up Potion for the Hospital Wing. She brews <key>7</key> bottles per batch and needs to make <key>5</key> batches. Each bottle costs <key>8</key> Galleons in ingredients. She has a budget of <key>300</key> Galleons. How much will she have left after paying for the order?",
-    parts: [
-      {
-        label: 'Part (a)',
-        question: "How many bottles does Madam Pomfrey brew in total?",
-        explain: "She brews 7 bottles per batch and makes 5 batches.",
-        hint_op: "5 equal batches of 7 bottles each. The equation is: 5 × 7 = ?",
-        hint_solve: "5 × 7 = 35 bottles total.",
-        op: '×', nums: [5, 7], answer: 35,
-        answerSentence: "Madam Pomfrey brews ___ bottles in total.",
-        icon: '🧪', groupLabels: ['Batch 1','Batch 2','Batch 3','Batch 4','Batch 5'],
-      },
-      {
-        label: 'Part (b)',
-        question: "How many Galleons does the entire order cost?",
-        explain: "She has 35 bottles (from Part a) and each bottle costs 8 Galleons.",
-        hint_op: "35 bottles at 8 Galleons each. The equation is: 35 × 8 = ?",
-        hint_solve: "35 × 8: 30 × 8 = 240, 5 × 8 = 40. Total: 240 + 40 = 280.",
-        op: '×', nums: [35, 8], answer: 280,
-        answerSentence: "The entire order costs ___ Galleons.",
-        icon: '🪙', groupLabels: null,
-      },
-      {
-        label: 'Part (c)',
-        question: "How many Galleons will she have left after paying for the order?",
-        explain: "The order costs 280 Galleons (from Part b). She has 300 Galleons available.",
-        hint_op: "Remaining = 300 − 280 = ?",
-        hint_solve: "300 − 280 = 20 Galleons remaining.",
-        op: '-', nums: [300, 280], answer: 20,
-        answerSentence: "Madam Pomfrey will have ___ Galleons remaining.",
-        icon: '💰', groupLabels: ['Budget', 'Order cost'],
-      },
-    ],
-  },
-  {
-    id: 'ms1c',
-    text: "Madam Pomfrey needs to brew Wiggenweld Potion for the Hospital Wing. She brews <key>8</key> bottles per batch and needs to make <key>3</key> batches. Each bottle costs <key>5</key> Galleons in ingredients. She has a budget of <key>200</key> Galleons. How much will she have left after paying for the order?",
-    parts: [
-      {
-        label: 'Part (a)',
-        question: "How many bottles does Madam Pomfrey brew in total?",
-        explain: "She brews 8 bottles per batch and makes 3 batches.",
-        hint_op: "3 equal batches of 8 bottles each. The equation is: 3 × 8 = ?",
-        hint_solve: "3 × 8 = 24 bottles total.",
-        op: '×', nums: [3, 8], answer: 24,
-        answerSentence: "Madam Pomfrey brews ___ bottles in total.",
-        icon: '🧪', groupLabels: ['Batch 1','Batch 2','Batch 3'],
-      },
-      {
-        label: 'Part (b)',
-        question: "How many Galleons does the entire order cost?",
-        explain: "She has 24 bottles (from Part a) and each bottle costs 5 Galleons.",
-        hint_op: "24 bottles at 5 Galleons each. The equation is: 24 × 5 = ?",
-        hint_solve: "24 × 5: 20 × 5 = 100, 4 × 5 = 20. Total: 100 + 20 = 120.",
-        op: '×', nums: [24, 5], answer: 120,
-        answerSentence: "The entire order costs ___ Galleons.",
-        icon: '🪙', groupLabels: null,
-      },
-      {
-        label: 'Part (c)',
-        question: "How many Galleons will she have left after paying for the order?",
-        explain: "The order costs 120 Galleons (from Part b). She has 200 Galleons available.",
-        hint_op: "Remaining = 200 − 120 = ?",
-        hint_solve: "200 − 120 = 80 Galleons remaining.",
-        op: '-', nums: [200, 120], answer: 80,
-        answerSentence: "Madam Pomfrey will have ___ Galleons remaining.",
-        icon: '💰', groupLabels: ['Budget', 'Order cost'],
-      },
-    ],
-  },
-
-  // ── ms2 variants ──────────────────────────────────────────────
-  {
-    id: 'ms2b',
-    text: "Hagrid is stocking food for his magical creatures. He has <key>4</key> Thestrals and <key>3</key> Bowtruckles to feed each day. Each Thestral eats <key>5</key> cuts of meat a day. Each Bowtruckle eats <key>7</key> wood-lice a day. How many food items does Hagrid need in total each day?",
-    parts: [
-      {
-        label: 'Part (a)',
-        question: "How many cuts of meat does Hagrid need each day for all the Thestrals?",
-        explain: "He has 4 Thestrals and each eats 5 cuts of meat.",
-        hint_op: "4 equal groups of 5. The equation is: 4 × 5 = ?",
-        hint_solve: "4 × 5 = 20 cuts of meat.",
-        op: '×', nums: [4, 5], answer: 20,
-        answerSentence: "Hagrid needs ___ cuts of meat for the Thestrals.",
-        icon: '🦴', groupLabels: ['Thestral 1','Thestral 2','Thestral 3','Thestral 4'],
-      },
-      {
-        label: 'Part (b)',
-        question: "How many wood-lice does Hagrid need each day for all the Bowtruckles?",
-        explain: "He has 3 Bowtruckles and each eats 7 wood-lice.",
-        hint_op: "3 equal groups of 7. The equation is: 3 × 7 = ?",
-        hint_solve: "3 × 7 = 21 wood-lice.",
-        op: '×', nums: [3, 7], answer: 21,
-        answerSentence: "Hagrid needs ___ wood-lice for the Bowtruckles.",
-        icon: '🌿', groupLabels: ['Bowtruckle 1','Bowtruckle 2','Bowtruckle 3'],
-      },
-      {
-        label: 'Part (c)',
-        question: "How many food items does Hagrid need to prepare in total each day?",
-        explain: "He needs 20 cuts of meat (Part a) and 21 wood-lice (Part b). Add both totals.",
-        hint_op: "Total food = meat + wood-lice = 20 + 21 = ?",
-        hint_solve: "20 + 21 = 41 food items total.",
-        op: '+', nums: [20, 21], answer: 41,
-        answerSentence: "Hagrid needs ___ food items in total each day.",
-        icon: '🍖', groupLabels: ['Meat portions', 'Wood-lice'],
-      },
-    ],
-  },
-  {
-    id: 'ms2c',
-    text: "Hagrid is preparing food for two groups of creatures. He has <key>5</key> Flobberworms and <key>6</key> Puffskeins to feed each day. Each Flobberworm eats <key>4</key> leaves a day. Each Puffskein eats <key>3</key> crumbs a day. How many food items does Hagrid need in total each day?",
-    parts: [
-      {
-        label: 'Part (a)',
-        question: "How many leaves does Hagrid need each day for all the Flobberworms?",
-        explain: "He has 5 Flobberworms and each eats 4 leaves.",
-        hint_op: "5 equal groups of 4. The equation is: 5 × 4 = ?",
-        hint_solve: "5 × 4 = 20 leaves.",
-        op: '×', nums: [5, 4], answer: 20,
-        answerSentence: "Hagrid needs ___ leaves for the Flobberworms.",
-        icon: '🌱', groupLabels: ['Flobberworm 1','Flobberworm 2','Flobberworm 3','Flobberworm 4','Flobberworm 5'],
-      },
-      {
-        label: 'Part (b)',
-        question: "How many crumbs does Hagrid need each day for all the Puffskeins?",
-        explain: "He has 6 Puffskeins and each eats 3 crumbs.",
-        hint_op: "6 equal groups of 3. The equation is: 6 × 3 = ?",
-        hint_solve: "6 × 3 = 18 crumbs.",
-        op: '×', nums: [6, 3], answer: 18,
-        answerSentence: "Hagrid needs ___ crumbs for the Puffskeins.",
-        icon: '🍞', groupLabels: ['Puffskein 1','Puffskein 2','Puffskein 3','Puffskein 4','Puffskein 5','Puffskein 6'],
-      },
-      {
-        label: 'Part (c)',
-        question: "How many food items does Hagrid need to prepare in total each day?",
-        explain: "He needs 20 leaves (Part a) and 18 crumbs (Part b). Add both totals.",
-        hint_op: "Total food = leaves + crumbs = 20 + 18 = ?",
-        hint_solve: "20 + 18 = 38 food items total.",
-        op: '+', nums: [20, 18], answer: 38,
-        answerSentence: "Hagrid needs ___ food items in total each day.",
-        icon: '🍖', groupLabels: ['Leaves', 'Crumbs'],
-      },
-    ],
-  },
-
-  // ── ms3 variants ──────────────────────────────────────────────
-  {
-    id: 'ms3b',
-    text: "The Hogwarts Express has <key>7</key> carriages. Each carriage seats <key>24</key> students. This year <key>139</key> are returning students. How many seats are available for new first-years?",
-    parts: [
-      {
-        label: 'Part (a)',
-        question: "How many students can the Hogwarts Express carry in total?",
-        explain: "There are 7 carriages and each seats exactly 24 students.",
-        hint_op: "7 equal groups of 24. The equation is: 7 × 24 = ?",
-        hint_solve: "7 × 24: 7 × 20 = 140, 7 × 4 = 28. Total: 140 + 28 = 168.",
-        op: '×', nums: [7, 24], answer: 168,
-        answerSentence: "The Hogwarts Express can carry ___ students in total.",
-        icon: '🚂', groupLabels: ['Car 1','Car 2','Car 3','Car 4','Car 5','Car 6','Car 7'],
-      },
-      {
-        label: 'Part (b)',
-        question: "How many seats are available for new first-years?",
-        explain: "The train fits 168 students total and 139 are returning. The rest must be first-years.",
-        hint_op: "First-years = total capacity − returning students = 168 − 139 = ?",
-        hint_solve: "168 − 139: 168 − 140 = 28, then add 1 back: 29.",
-        op: '-', nums: [168, 139], answer: 29,
-        answerSentence: "___ seats are available for new first-year students.",
-        icon: '🎓', groupLabels: ['Total seats', 'Returning students'],
-      },
-    ],
-  },
-  {
-    id: 'ms3c',
-    text: "The Hogwarts Express has <key>9</key> carriages. Each carriage seats <key>16</key> students. This year <key>118</key> are returning students. How many seats are available for new first-years?",
-    parts: [
-      {
-        label: 'Part (a)',
-        question: "How many students can the Hogwarts Express carry in total?",
-        explain: "There are 9 carriages and each seats exactly 16 students.",
-        hint_op: "9 equal groups of 16. The equation is: 9 × 16 = ?",
-        hint_solve: "9 × 16: 9 × 10 = 90, 9 × 6 = 54. Total: 90 + 54 = 144.",
-        op: '×', nums: [9, 16], answer: 144,
-        answerSentence: "The Hogwarts Express can carry ___ students in total.",
-        icon: '🚂', groupLabels: ['Car 1','Car 2','Car 3','Car 4','Car 5','Car 6','Car 7','Car 8','Car 9'],
-      },
-      {
-        label: 'Part (b)',
-        question: "How many seats are available for new first-years?",
-        explain: "The train fits 144 students total and 118 are returning. The rest must be first-years.",
-        hint_op: "First-years = total capacity − returning students = 144 − 118 = ?",
-        hint_solve: "144 − 118: 144 − 120 = 24, then add 2 back: 26.",
-        op: '-', nums: [144, 118], answer: 26,
-        answerSentence: "___ seats are available for new first-year students.",
-        icon: '🎓', groupLabels: ['Total seats', 'Returning students'],
-      },
-    ],
-  },
-
-  // ── ms4 variants ──────────────────────────────────────────────
-  {
-    id: 'ms4b',
-    text: "Professor Flitwick is awarding House Points in Charms. Gryffindor students earned <key>8</key> points each and there are <key>7</key> students. Slytherin earned <key>6</key> points each and has <key>9</key> students. Which house earned more, and by how many points?",
-    parts: [
-      {
-        label: 'Part (a)',
-        question: "How many House Points did the Gryffindor students earn in total?",
-        explain: "7 Gryffindor students each earned 8 points in Charms.",
-        hint_op: "7 equal groups of 8 points. The equation is: 7 × 8 = ?",
-        hint_solve: "7 × 8 = 56 points for Gryffindor.",
-        op: '×', nums: [7, 8], answer: 56,
-        answerSentence: "Gryffindor earned ___ House Points in total.",
-        icon: '🦁', groupLabels: ['Student 1','Student 2','Student 3','Student 4','Student 5','Student 6','Student 7'],
-      },
-      {
-        label: 'Part (b)',
-        question: "How many House Points did the Slytherin students earn in total?",
-        explain: "9 Slytherin students each earned 6 points in Charms.",
-        hint_op: "9 equal groups of 6 points. The equation is: 9 × 6 = ?",
-        hint_solve: "9 × 6 = 54 points for Slytherin.",
-        op: '×', nums: [9, 6], answer: 54,
-        answerSentence: "Slytherin earned ___ House Points in total.",
-        icon: '🐍', groupLabels: ['Student 1','Student 2','Student 3','Student 4','Student 5','Student 6','Student 7','Student 8','Student 9'],
-      },
-      {
-        label: 'Part (c)',
-        question: "By how many points is Gryffindor ahead of Slytherin?",
-        explain: "Gryffindor earned 56 points (Part a) and Slytherin earned 54 points (Part b). Find the difference.",
-        hint_op: "Difference = Gryffindor − Slytherin = 56 − 54 = ?",
-        hint_solve: "56 − 54 = 2. Gryffindor is just 2 points ahead!",
-        op: '-', nums: [56, 54], answer: 2,
-        answerSentence: "Gryffindor is ahead by ___ House Points.",
-        icon: '⭐', groupLabels: ['Gryffindor', 'Slytherin'],
-      },
-    ],
-  },
-  {
-    id: 'ms4c',
-    text: "Professor Sprout is awarding House Points in Herbology. Gryffindor students earned <key>7</key> points each and there are <key>6</key> students. Slytherin earned <key>6</key> points each and has <key>8</key> students. Which house earned more, and by how many points?",
-    parts: [
-      {
-        label: 'Part (a)',
-        question: "How many House Points did the Gryffindor students earn in total?",
-        explain: "6 Gryffindor students each earned 7 points in Herbology.",
-        hint_op: "6 equal groups of 7 points. The equation is: 6 × 7 = ?",
-        hint_solve: "6 × 7 = 42 points for Gryffindor.",
-        op: '×', nums: [6, 7], answer: 42,
-        answerSentence: "Gryffindor earned ___ House Points in total.",
-        icon: '🦁', groupLabels: ['Student 1','Student 2','Student 3','Student 4','Student 5','Student 6'],
-      },
-      {
-        label: 'Part (b)',
-        question: "How many House Points did the Slytherin students earn in total?",
-        explain: "8 Slytherin students each earned 6 points in Herbology.",
-        hint_op: "8 equal groups of 6 points. The equation is: 8 × 6 = ?",
-        hint_solve: "8 × 6 = 48 points for Slytherin.",
-        op: '×', nums: [8, 6], answer: 48,
-        answerSentence: "Slytherin earned ___ House Points in total.",
-        icon: '🐍', groupLabels: ['Student 1','Student 2','Student 3','Student 4','Student 5','Student 6','Student 7','Student 8'],
-      },
-      {
-        label: 'Part (c)',
-        question: "By how many points is Slytherin ahead of Gryffindor?",
-        explain: "Slytherin earned 48 points (Part b) and Gryffindor earned 42 points (Part a). Find the difference.",
-        hint_op: "Difference = Slytherin − Gryffindor = 48 − 42 = ?",
-        hint_solve: "48 − 42 = 6. Slytherin leads by 6 points!",
-        op: '-', nums: [48, 42], answer: 6,
-        answerSentence: "Slytherin is ahead by ___ House Points.",
-        icon: '⭐', groupLabels: ['Slytherin', 'Gryffindor'],
-      },
-    ],
-  },
-
-  // ── ms5 variants ──────────────────────────────────────────────
-  {
-    id: 'ms5b',
-    text: "The Hufflepuff Quidditch team practises <key>4</key> times a week. Each session lasts <key>75</key> minutes. A full season lasts <key>4</key> weeks. The pitch is shared with <key>4</key> other house teams who each train for the same total time. How many minutes of pitch time are used across all 5 teams?",
-    parts: [
-      {
-        label: 'Part (a)',
-        question: "How many minutes does Hufflepuff practise in one week?",
-        explain: "Hufflepuff trains 4 times a week and each session is 75 minutes.",
-        hint_op: "4 equal sessions of 75 minutes each. The equation is: 4 × 75 = ?",
-        hint_solve: "4 × 75: 4 × 70 = 280, 4 × 5 = 20. Total: 280 + 20 = 300.",
-        op: '×', nums: [4, 75], answer: 300,
-        answerSentence: "Hufflepuff practises ___ minutes in one week.",
-        icon: '🧹', groupLabels: null,
-      },
-      {
-        label: 'Part (b)',
-        question: "How many minutes does Hufflepuff practise across the full 4-week season?",
-        explain: "They do 300 minutes per week (from Part a) and train for 4 weeks.",
-        hint_op: "4 equal weeks of 300 minutes. The equation is: 4 × 300 = ?",
-        hint_solve: "4 × 300 = 1200 minutes.",
-        op: '×', nums: [4, 300], answer: 1200,
-        answerSentence: "Hufflepuff uses ___ minutes of pitch time over the season.",
-        icon: '⏱️', groupLabels: ['Week 1','Week 2','Week 3','Week 4'],
-      },
-      {
-        label: 'Part (c)',
-        question: "All 5 house teams use the pitch for the same number of minutes. How many total pitch-minutes are used across the whole season?",
-        explain: "Hufflepuff used 1200 minutes (from Part b) and all 5 teams use the same amount.",
-        hint_op: "5 equal teams of 1200 minutes each. The equation is: 5 × 1200 = ?",
-        hint_solve: "5 × 1200 = 6000 minutes.",
-        op: '×', nums: [5, 1200], answer: 6000,
-        answerSentence: "___ total pitch-minutes are used across all 5 teams.",
-        icon: '🏟️', groupLabels: ['Gryffindor','Hufflepuff','Ravenclaw','Slytherin','Other'],
-      },
-    ],
-  },
-  {
-    id: 'ms5c',
-    text: "The Ravenclaw Quidditch team practises <key>6</key> times a week. Each session lasts <key>60</key> minutes. A full season lasts <key>2</key> weeks. The pitch is shared with <key>4</key> other house teams who each train for the same total time. How many minutes of pitch time are used across all 5 teams?",
-    parts: [
-      {
-        label: 'Part (a)',
-        question: "How many minutes does Ravenclaw practise in one week?",
-        explain: "Ravenclaw trains 6 times a week and each session is 60 minutes.",
-        hint_op: "6 equal sessions of 60 minutes each. The equation is: 6 × 60 = ?",
-        hint_solve: "6 × 60 = 360 minutes per week.",
-        op: '×', nums: [6, 60], answer: 360,
-        answerSentence: "Ravenclaw practises ___ minutes in one week.",
-        icon: '🧹', groupLabels: null,
-      },
-      {
-        label: 'Part (b)',
-        question: "How many minutes does Ravenclaw practise across the full 2-week season?",
-        explain: "They do 360 minutes per week (from Part a) and train for 2 weeks.",
-        hint_op: "2 equal weeks of 360 minutes. The equation is: 2 × 360 = ?",
-        hint_solve: "2 × 360 = 720 minutes.",
-        op: '×', nums: [2, 360], answer: 720,
-        answerSentence: "Ravenclaw uses ___ minutes of pitch time over the season.",
-        icon: '⏱️', groupLabels: ['Week 1','Week 2'],
-      },
-      {
-        label: 'Part (c)',
-        question: "All 5 house teams use the pitch for the same number of minutes. How many total pitch-minutes are used across the whole season?",
-        explain: "Ravenclaw used 720 minutes (from Part b) and all 5 teams use the same amount.",
-        hint_op: "5 equal teams of 720 minutes each. The equation is: 5 × 720 = ?",
-        hint_solve: "5 × 720: 5 × 700 = 3500, 5 × 20 = 100. Total: 3500 + 100 = 3600.",
-        op: '×', nums: [5, 720], answer: 3600,
-        answerSentence: "___ total pitch-minutes are used across all 5 teams.",
-        icon: '🏟️', groupLabels: ['Gryffindor','Hufflepuff','Ravenclaw','Slytherin','Other'],
-      },
-    ],
-  },
-
-  // ── ms6 variants ──────────────────────────────────────────────
-  {
-    id: 'ms6b',
-    text: "Honeydukes makes Bertie Bott's Every Flavour Beans in batches. One batch produces <key>24</key> bags. They made <key>5</key> batches this morning but <key>37</key> bags were damaged and had to be discarded. How many sellable bags remain?",
-    parts: [
-      {
-        label: 'Part (a)',
-        question: "How many bags were produced in total this morning?",
-        explain: "Honeydukes made 5 batches of 24 bags each.",
-        hint_op: "5 equal batches of 24. The equation is: 5 × 24 = ?",
-        hint_solve: "5 × 24: 5 × 20 = 100, 5 × 4 = 20. Total: 100 + 20 = 120.",
-        op: '×', nums: [5, 24], answer: 120,
-        answerSentence: "___ bags were produced this morning.",
-        icon: '🍬', groupLabels: ['Batch 1','Batch 2','Batch 3','Batch 4','Batch 5'],
-      },
-      {
-        label: 'Part (b)',
-        question: "How many bags are available to sell after discarding the damaged ones?",
-        explain: "120 bags were made (from Part a) but 37 were damaged.",
-        hint_op: "Sellable = total − damaged = 120 − 37 = ?",
-        hint_solve: "120 − 37: 120 − 40 = 80, then add 3 back: 83.",
-        op: '-', nums: [120, 37], answer: 83,
-        answerSentence: "___ bags are available to sell.",
-        icon: '🍬', groupLabels: ['Total bags', 'Damaged bags'],
-      },
-    ],
-  },
-  {
-    id: 'ms6c',
-    text: "Honeydukes makes Sugar Quills in batches. One batch produces <key>14</key> quills. They made <key>6</key> batches this morning but <key>19</key> quills were damaged and had to be discarded. How many sellable quills remain?",
-    parts: [
-      {
-        label: 'Part (a)',
-        question: "How many Sugar Quills were made in total this morning?",
-        explain: "Honeydukes made 6 batches of 14 quills each.",
-        hint_op: "6 equal batches of 14. The equation is: 6 × 14 = ?",
-        hint_solve: "6 × 14: 6 × 10 = 60, 6 × 4 = 24. Total: 60 + 24 = 84.",
-        op: '×', nums: [6, 14], answer: 84,
-        answerSentence: "___ Sugar Quills were produced this morning.",
-        icon: '✏️', groupLabels: ['Batch 1','Batch 2','Batch 3','Batch 4','Batch 5','Batch 6'],
-      },
-      {
-        label: 'Part (b)',
-        question: "How many Sugar Quills are available to sell after discarding the damaged ones?",
-        explain: "84 quills were made (from Part a) but 19 were damaged.",
-        hint_op: "Sellable = total − damaged = 84 − 19 = ?",
-        hint_solve: "84 − 19: 84 − 20 = 64, then add 1 back: 65.",
-        op: '-', nums: [84, 19], answer: 65,
-        answerSentence: "___ Sugar Quills are available to sell.",
-        icon: '✏️', groupLabels: ['Total quills', 'Damaged quills'],
-      },
-    ],
-  },
-
-  // ── ms7 variants ──────────────────────────────────────────────
-  {
-    id: 'ms7b',
-    text: "The Hogwarts owlery has <key>84</key> owls. The owls are organised into <key>7</key> equal flights. Slytherin house is allocated <key>2</key> of these flights. How many owls are left for the other houses?",
-    parts: [
-      {
-        label: 'Part (a)',
-        question: "How many owls are in each flight?",
-        explain: "84 owls are divided equally into 7 flights.",
-        hint_op: "84 owls split into 7 equal groups. The equation is: 84 ÷ 7 = ?",
-        hint_solve: "84 ÷ 7 = 12 owls per flight.",
-        op: '÷', nums: [84, 7], answer: 12,
-        answerSentence: "Each flight contains ___ owls.",
-        icon: '🦉', groupLabels: ['Total owls', 'Flights'],
-      },
-      {
-        label: 'Part (b)',
-        question: "How many owls does Slytherin receive across their 2 flights?",
-        explain: "Each flight has 12 owls (from Part a) and Slytherin receives 2 flights.",
-        hint_op: "2 equal flights of 12 owls each. The equation is: 2 × 12 = ?",
-        hint_solve: "2 × 12 = 24 owls for Slytherin.",
-        op: '×', nums: [2, 12], answer: 24,
-        answerSentence: "Slytherin receives ___ owls in total.",
-        icon: '🦉', groupLabels: ['Flight 1','Flight 2'],
-      },
-      {
-        label: 'Part (c)',
-        question: "How many owls remain for the other houses?",
-        explain: "There are 84 owls in the owlery and Slytherin has taken 24 (from Part b).",
-        hint_op: "Remaining = total − Slytherin's share = 84 − 24 = ?",
-        hint_solve: "84 − 24: 84 − 20 = 64, then 64 − 4 = 60.",
-        op: '-', nums: [84, 24], answer: 60,
-        answerSentence: "___ owls remain for the other houses.",
-        icon: '🦉', groupLabels: ['Total owls', "Slytherin's owls"],
-      },
-    ],
-  },
-  {
-    id: 'ms7c',
-    text: "The Hogwarts owlery has <key>72</key> owls. The owls are organised into <key>9</key> equal flights. Hufflepuff house is allocated <key>4</key> of these flights. How many owls are left for the other houses?",
-    parts: [
-      {
-        label: 'Part (a)',
-        question: "How many owls are in each flight?",
-        explain: "72 owls are divided equally into 9 flights.",
-        hint_op: "72 owls split into 9 equal groups. The equation is: 72 ÷ 9 = ?",
-        hint_solve: "72 ÷ 9 = 8 owls per flight.",
-        op: '÷', nums: [72, 9], answer: 8,
-        answerSentence: "Each flight contains ___ owls.",
-        icon: '🦉', groupLabels: ['Total owls', 'Flights'],
-      },
-      {
-        label: 'Part (b)',
-        question: "How many owls does Hufflepuff receive across their 4 flights?",
-        explain: "Each flight has 8 owls (from Part a) and Hufflepuff receives 4 flights.",
-        hint_op: "4 equal flights of 8 owls each. The equation is: 4 × 8 = ?",
-        hint_solve: "4 × 8 = 32 owls for Hufflepuff.",
-        op: '×', nums: [4, 8], answer: 32,
-        answerSentence: "Hufflepuff receives ___ owls in total.",
-        icon: '🦉', groupLabels: ['Flight 1','Flight 2','Flight 3','Flight 4'],
-      },
-      {
-        label: 'Part (c)',
-        question: "How many owls remain for the other houses?",
-        explain: "There are 72 owls in the owlery and Hufflepuff has taken 32 (from Part b).",
-        hint_op: "Remaining = total − Hufflepuff's share = 72 − 32 = ?",
-        hint_solve: "72 − 32 = 40.",
-        op: '-', nums: [72, 32], answer: 40,
-        answerSentence: "___ owls remain for the other houses.",
-        icon: '🦉', groupLabels: ['Total owls', "Hufflepuff's owls"],
       },
     ],
   },
@@ -2546,6 +1935,90 @@ const MS_PROBLEMS = [
 //       line has segments: {text} or {blank: id, answer, width}
 //       after all blanks in a section are correct, next section unlocks
 const ADV_PROBLEMS = [
+  {
+    id: 'adv2',
+    icon: '🔮',
+    text: "Fred and George sell two joke items: <key>Stink Pellets</key> for <key>1</key> Sickle and <key>Dungbombs</key> for <key>2</key> Sickles. They sold <key>4</key> items in total and made <key>6</key> Sickles. How many of each did they sell?",
+    vars: [
+      { sym: 'S', label: 'Stink Pellets', color: 'var(--accent)' },
+      { sym: 'D', label: 'Dungbombs',   color: 'var(--teal)'   },
+    ],
+    sections: [
+      {
+        id: 'setup',
+        title: 'Step 1: Write the equations',
+        instruction: 'Translate the facts into equations.',
+        groups: [
+          {
+            label: 'Total items:',
+            lines: [
+              [
+                { text: 'S + D =' },
+                { blank: 'adv2_eq1', answer: 4, width: 56, hint: 'How many items total?' },
+              ]
+            ],
+          },
+          {
+            label: 'Total Sickles:',
+            lines: [
+              [
+                { blank: 'adv2_eq2_S', answer: 1, width: 44, hint: 'Cost of Stink Pellet' },
+                { text: 'S +' },
+                { blank: 'adv2_eq2_D', answer: 2, width: 44, hint: 'Cost of Dungbomb' },
+                { text: 'D =' },
+                { blank: 'adv2_eq2_tot', answer: 6, width: 56, hint: 'Total money' },
+              ]
+            ],
+          }
+        ]
+      },
+      {
+        id: 'sub',
+        title: 'Step 2: Substitution',
+        instruction: 'Rearrange the first equation to S = 4 - D, then substitute it into the money equation.',
+        groups: [
+          {
+            label: 'Money equation with substitution:',
+            lines: [
+              [
+                { text: '1(4 - D) + 2D =' },
+                { blank: 'adv2_sub1', answer: 6, width: 56, hint: 'Total money' },
+              ],
+              [
+                { text: '4 - D + 2D = 6' }
+              ],
+              [
+                { text: '4 + D =' },
+                { blank: 'adv2_sub2', answer: 6, width: 56, hint: 'Total money' },
+              ],
+              [
+                { text: 'D =' },
+                { blank: 'adv2_sub3', answer: 2, width: 56, hint: 'Subtract 4 from 6' },
+              ]
+            ]
+          }
+        ]
+      },
+      {
+        id: 'final',
+        title: 'Step 3: Find S',
+        instruction: 'Now plug D back into the first equation to find S.',
+        groups: [
+          {
+            label: 'Final answer:',
+            lines: [
+              [
+                { text: 'S = 4 -' },
+                { blank: 'adv2_fin1', answer: 2, width: 44, hint: 'Dungbombs sold' },
+                { text: '=' },
+                { blank: 'adv2_fin2', answer: 2, width: 44, hint: 'Stink pellets sold' },
+              ]
+            ]
+          }
+        ]
+      }
+    ]
+  },
   {
     id: 'adv1',
     icon: '🧥',
@@ -2928,272 +2401,6 @@ const ADV_PROBLEMS = [
     ],
     finalAnswer: 'Ron bought <strong>4 Chocolate Frogs</strong> and <strong>3 Bertie Bott\'s bags</strong>.',
   },
-  {
-    id: 'adv4',
-    icon: '🧹',
-    text: "The Quidditch pitch has <key>2</key> types of brooms for hire: <key>Nimbus</key> at <key>5</key> Galleons each and <key>Cleansweep</key> at <key>3</key> Galleons each. In one afternoon <key>8</key> brooms were hired and <key>28</key> Galleons collected. How many of each type were hired?",
-    vars: [
-      { sym: 'N', label: 'Nimbus brooms hired (5G each)', color: 'var(--accent)' },
-      { sym: 'C', label: 'Cleansweep brooms hired (3G each)', color: 'var(--teal)' },
-    ],
-    sections: [
-      {
-        id: 'setup',
-        title: 'Step 1: Write the equations',
-        instruction: 'Translate the two facts into equations.',
-        groups: [
-          {
-            label: 'Total brooms:',
-            lines: [
-              [
-                { text: 'N + C =' },
-                { blank: 'adv4_eq1', answer: 8, width: 56, hint: 'Total brooms hired' },
-              ]
-            ],
-          },
-          {
-            label: 'Total Galleons:',
-            lines: [
-              [
-                { blank: 'adv4_eq2a', answer: 5, width: 44, hint: 'Price per Nimbus' },
-                { text: 'N +' },
-                { blank: 'adv4_eq2b', answer: 3, width: 44, hint: 'Price per Cleansweep' },
-                { text: 'C =' },
-                { blank: 'adv4_eq2c', answer: 28, width: 56, hint: 'Total Galleons collected' },
-              ]
-            ],
-          },
-        ],
-      },
-      {
-        id: 'solve',
-        title: 'Step 2: Solve the system',
-        instruction: 'Rearrange Eq 1 for N, substitute into Eq 2, and simplify.',
-        groups: [
-          {
-            label: 'From Eq 1:',
-            lines: [
-              [{ text: 'N = 8 − C' }],
-            ],
-          },
-          {
-            label: 'Substitute into Eq 2:',
-            lines: [
-              [
-                { blank: 'adv4_s1', answer: 5, width: 44, hint: 'Coefficient of N' },
-                { text: '(8 − C) +' },
-                { blank: 'adv4_s2', answer: 3, width: 44, hint: 'Coefficient of C' },
-                { text: 'C = 28' },
-              ],
-              [
-                { blank: 'adv4_s3', answer: 40, width: 56, hint: '5 × 8 = ?' },
-                { text: '− 5C + 3C = 28' },
-              ],
-              [
-                { blank: 'adv4_s4', answer: 40, width: 56, hint: 'Same constant as above' },
-                { text: '−' },
-                { blank: 'adv4_s5', answer: 2, width: 44, hint: '5 − 3 = ?' },
-                { text: 'C = 28' },
-              ],
-              [
-                { blank: 'adv4_s6', answer: 2, width: 44, hint: 'Same coefficient' },
-                { text: 'C =' },
-                { blank: 'adv4_s7', answer: 12, width: 56, hint: '40 − 28 = ?' },
-              ],
-            ],
-          },
-        ],
-      },
-      {
-        id: 'find',
-        title: 'Step 3: Find C and N',
-        instruction: 'Divide to find C, then substitute back to find N.',
-        groups: [
-          {
-            label: 'Solve for C:',
-            lines: [
-              [
-                { text: 'C = 12 ÷ 2 =' },
-                { blank: 'adv4_c', answer: 6, width: 56, hint: '12 ÷ 2 = ?' },
-              ],
-            ],
-          },
-          {
-            label: 'Substitute back to find N:',
-            lines: [
-              [
-                { text: 'N = 8 − C = 8 −' },
-                { blank: 'adv4_n_sub', answer: 6, width: 44, hint: 'The value of C you just found' },
-                { text: '=' },
-                { blank: 'adv4_n_ans', answer: 2, width: 56, hint: '8 − 6 = ?' },
-              ],
-            ],
-          },
-        ],
-      },
-      {
-        id: 'verify',
-        title: 'Final Answer — Verify',
-        instruction: 'Check both equations with N = 2 and C = 6.',
-        groups: [
-          {
-            label: 'Check Eq 1:',
-            lines: [
-              [
-                { text: 'N + C = 2 + 6 =' },
-                { blank: 'adv4_v1', answer: 8, width: 56, hint: '2 + 6 = ?' },
-                { text: '✓ (should be 8)' },
-              ],
-            ],
-          },
-          {
-            label: 'Check Eq 2:',
-            lines: [
-              [
-                { text: '5(2) + 3(6) = 10 + 18 =' },
-                { blank: 'adv4_v2', answer: 28, width: 56, hint: '10 + 18 = ?' },
-                { text: '✓ (should be 28)' },
-              ],
-            ],
-          },
-        ],
-      },
-    ],
-    finalAnswer: '<strong>2 Nimbus</strong> brooms and <strong>6 Cleansweep</strong> brooms were hired.',
-  },
-  {
-    id: 'adv5',
-    icon: '🧪',
-    text: "Professor Snape has <key>2</key> types of cauldrons: <key>Silver</key> ones worth <key>9</key> Galleons and <key>Copper</key> ones worth <key>4</key> Galleons. He has <key>9</key> cauldrons worth a total of <key>51</key> Galleons. How many of each does he have?",
-    vars: [
-      { sym: 'S', label: 'Silver cauldrons (9G each)', color: 'var(--accent)' },
-      { sym: 'C', label: 'Copper cauldrons (4G each)', color: 'var(--teal)' },
-    ],
-    sections: [
-      {
-        id: 'setup',
-        title: 'Step 1: Write the equations',
-        instruction: 'Translate the two facts from the problem into equations.',
-        groups: [
-          {
-            label: 'Total cauldrons:',
-            lines: [
-              [
-                { text: 'S + C =' },
-                { blank: 'adv5_eq1', answer: 9, width: 56, hint: 'Total number of cauldrons' },
-              ],
-            ],
-          },
-          {
-            label: 'Total value:',
-            lines: [
-              [
-                { blank: 'adv5_eq2a', answer: 9, width: 44, hint: 'Value of each Silver cauldron' },
-                { text: 'S +' },
-                { blank: 'adv5_eq2b', answer: 4, width: 44, hint: 'Value of each Copper cauldron' },
-                { text: 'C =' },
-                { blank: 'adv5_eq2c', answer: 51, width: 56, hint: 'Total value' },
-              ],
-            ],
-          },
-        ],
-      },
-      {
-        id: 'solve',
-        title: 'Step 2: Solve the system',
-        instruction: 'Rearrange Eq 1 for S, substitute into Eq 2, and simplify.',
-        groups: [
-          {
-            label: 'From Eq 1:',
-            lines: [
-              [{ text: 'S = 9 − C' }],
-            ],
-          },
-          {
-            label: 'Substitute into Eq 2:',
-            lines: [
-              [
-                { blank: 'adv5_s1', answer: 9, width: 44, hint: 'Coefficient of S' },
-                { text: '(9 − C) +' },
-                { blank: 'adv5_s2', answer: 4, width: 44, hint: 'Coefficient of C' },
-                { text: 'C = 51' },
-              ],
-              [
-                { blank: 'adv5_s3', answer: 81, width: 56, hint: '9 × 9 = ?' },
-                { text: '− 9C + 4C = 51' },
-              ],
-              [
-                { blank: 'adv5_s4', answer: 81, width: 56, hint: 'Same constant as above' },
-                { text: '−' },
-                { blank: 'adv5_s5', answer: 5, width: 44, hint: '9 − 4 = ?' },
-                { text: 'C = 51' },
-              ],
-              [
-                { blank: 'adv5_s6', answer: 5, width: 44, hint: 'Same coefficient' },
-                { text: 'C =' },
-                { blank: 'adv5_s7', answer: 30, width: 56, hint: '81 − 51 = ?' },
-              ],
-            ],
-          },
-        ],
-      },
-      {
-        id: 'find',
-        title: 'Step 3: Find C and S',
-        instruction: 'Divide to find C, then substitute back to find S.',
-        groups: [
-          {
-            label: 'Solve for C:',
-            lines: [
-              [
-                { text: 'C = 30 ÷ 5 =' },
-                { blank: 'adv5_c', answer: 6, width: 56, hint: '30 ÷ 5 = ?' },
-              ],
-            ],
-          },
-          {
-            label: 'Substitute back to find S:',
-            lines: [
-              [
-                { text: 'S = 9 − C = 9 −' },
-                { blank: 'adv5_s_sub', answer: 6, width: 44, hint: 'The value of C you just found' },
-                { text: '=' },
-                { blank: 'adv5_s_ans', answer: 3, width: 56, hint: '9 − 6 = ?' },
-              ],
-            ],
-          },
-        ],
-      },
-      {
-        id: 'verify',
-        title: 'Final Answer — Verify',
-        instruction: 'Check both equations with S = 3 and C = 6.',
-        groups: [
-          {
-            label: 'Check Eq 1:',
-            lines: [
-              [
-                { text: 'S + C = 3 + 6 =' },
-                { blank: 'adv5_v1', answer: 9, width: 56, hint: '3 + 6 = ?' },
-                { text: '✓ (should be 9)' },
-              ],
-            ],
-          },
-          {
-            label: 'Check Eq 2:',
-            lines: [
-              [
-                { text: '9(3) + 4(6) = 27 + 24 =' },
-                { blank: 'adv5_v2', answer: 51, width: 56, hint: '27 + 24 = ?' },
-                { text: '✓ (should be 51)' },
-              ],
-            ],
-          },
-        ],
-      },
-    ],
-    finalAnswer: 'Snape has <strong>3 Silver</strong> cauldrons and <strong>6 Copper</strong> cauldrons.',
-  },
 ];
 
 // =============================================
@@ -3205,7 +2412,11 @@ let advBlankState = {}; // blankId → { answered: bool, correct: bool }
 let advSectionUnlocked = []; // [true, false, false, false]
 
 function advInit() {
-  advShuffle = [...ADV_PROBLEMS].sort(() => Math.random() - 0.5);
+  advShuffle = ((currentMode === 'small' || currentMode === 'single')
+    ? ADV_PROBLEMS.filter(isSmallTaggedProblem)
+    : [...ADV_PROBLEMS]
+  ).sort(() => Math.random() - 0.5);
+
   advIndex = 0;
   advLoadProblem();
 }
@@ -3479,7 +2690,6 @@ function advCheckSection(si) {
 
 function advShowSuccess() {
   const p = advShuffle[advIndex];
-  addToAdvHistory(p);
   const container = document.getElementById('advStepsContainer');
 
   const banner = document.createElement('div');
@@ -3503,7 +2713,11 @@ let msPartAnswers = [];
 let msShuffle = [];
 
 function msInit() {
-  msShuffle = [...MS_PROBLEMS].sort(() => Math.random() - 0.5);
+  msShuffle = ((currentMode === 'small' || currentMode === 'single')
+    ? MS_PROBLEMS.filter(isSmallTaggedProblem)
+    : [...MS_PROBLEMS]
+  ).sort(() => Math.random() - 0.5);
+
   msIndex = 0;
   msLoadProblem();
 }
@@ -3570,13 +2784,31 @@ function renderSinglePartEq(part, idx) {
     ? `<button class="hint-btn" id="breakdownBtn${idx}" onclick="renderBreakdown(${idx})" style="border-color:var(--accent);color:var(--accent)">🔬 Break it Down</button>`
     : '';
   return `
-    <div class="eq-builder" style="margin-bottom:10px">
-      <div class="eq-num-box">${part.nums[0]}</div>
-      <div class="eq-op">${part.op}</div>
-      <div class="eq-num-box">${part.nums[1]}</div>
-      <div class="eq-op">=</div>
-      <input class="eq-input" id="msInput${idx}" type="number" placeholder="?"
-        onkeydown="if(event.key==='Enter') msCheckPart(${idx})">
+    <div class="eq-stack-wrap" style="margin-bottom:10px">
+      <div class="eq-stack">
+        ${msBuildMode === 'manual' 
+          ? `<input class="eq-input top-num" id="msNum0_${idx}" type="number" placeholder="?">` 
+          : `<div class="eq-num-box top-num">${part.nums[0]}</div>`}
+
+        ${msBuildMode === 'manual'
+          ? `<select class="stack-op" id="msOp_${idx}" style="background:transparent;border:2px dashed var(--accent);border-radius:6px;color:var(--text);outline:none;cursor:pointer;width:50px;text-align:center;padding:5px;">
+               <option value="?" style="color:#000">?</option>
+               <option value="+" style="color:#000">+</option>
+               <option value="-" style="color:#000">-</option>
+               <option value="×" style="color:#000">×</option>
+               <option value="÷" style="color:#000">÷</option>
+             </select>`
+          : `<div class="stack-op">${part.op}</div>`}
+
+        ${msBuildMode === 'manual' 
+          ? `<input class="eq-input bottom-num" id="msNum1_${idx}" type="number" placeholder="?">` 
+          : `<div class="eq-num-box bottom-num">${part.nums[1]}</div>`}
+
+        <div class="answer-line">
+          <input class="eq-input" id="msInput${idx}" type="number" placeholder="?"
+            onkeydown="if(event.key==='Enter') msCheckPart(${idx})">
+        </div>
+      </div>
     </div>
     <div id="breakdownArea${idx}" style="margin-top:8px"></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px">
@@ -3607,10 +2839,40 @@ function msCheckPart(partIdx) {
   const p = msShuffle[msIndex];
   const part = p.parts[partIdx];
   const input = document.getElementById(`msInput${partIdx}`);
-  const val = parseInt(input.value, 10);
   const fb = document.getElementById(`msFeedback${partIdx}`);
+  const val = parseInt(input.value, 10);
 
-  if (isNaN(val)) { fb.innerHTML = '<span style="color:var(--accent3)">Please enter a number!</span>'; return; }
+  if (msBuildMode === 'manual') {
+    const n0El = document.getElementById(`msNum0_${partIdx}`);
+    const n1El = document.getElementById(`msNum1_${partIdx}`);
+    const opEl = document.getElementById(`msOp_${partIdx}`);
+    const n0 = parseInt(n0El.value, 10);
+    const n1 = parseInt(n1El.value, 10);
+    const op = opEl.value;
+
+    if (isNaN(n0) || isNaN(n1) || op === '?') {
+      fb.innerHTML = '<span style="color:var(--accent3)">Please enter both numbers and select an operation first.</span>';
+      return;
+    }
+
+    if (n0 !== part.nums[0] || n1 !== part.nums[1] || op !== part.op) {
+      if (n0 !== part.nums[0]) { n0El.className = 'eq-input top-num wrong'; setTimeout(() => n0El.className = 'eq-input top-num', 600); }
+      if (n1 !== part.nums[1]) { n1El.className = 'eq-input bottom-num wrong'; setTimeout(() => n1El.className = 'eq-input bottom-num', 600); }
+      if (op !== part.op) { opEl.style.borderColor = 'var(--accent3)'; setTimeout(() => opEl.style.borderColor = 'var(--accent)', 600); }
+      fb.innerHTML = '<span style="color:var(--accent3)">The equation setup is not quite right yet.</span>';
+      return;
+    }
+
+    n0El.className = 'eq-input top-num correct';
+    n1El.className = 'eq-input bottom-num correct';
+    opEl.style.borderColor = 'var(--green)';
+    opEl.style.color = 'var(--green)';
+  }
+
+  if (isNaN(val)) {
+    fb.innerHTML = '<span style="color:var(--accent3)">Please enter your final answer!</span>';
+    return;
+  }
 
   if (val === part.answer) {
     input.className = 'eq-input correct';
@@ -3628,7 +2890,7 @@ function msCheckPart(partIdx) {
   } else {
     input.className = 'eq-input wrong';
     setTimeout(() => { input.className = 'eq-input'; }, 600);
-    fb.innerHTML = `<span style="color:var(--accent3)">✗ Not quite — try again!</span>`;
+    fb.innerHTML = `<span style="color:var(--accent3)">✗ Not quite. Try again.</span>`;
   }
 }
 
@@ -3663,85 +2925,7 @@ function msCheckMulti(partIdx) {
   }
 }
 
-// =============================================
-// MULTI-STEP HISTORY LOG
-// =============================================
-const msHistoryLog = [];
-
-function addToMsHistory(p) {
-  const entry = {
-    text: p.text.replace(/<[^>]+>/g, '').substring(0, 65) + '…',
-    parts: p.parts.length,
-    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-  };
-  msHistoryLog.unshift(entry);
-  renderMsHistory();
-}
-
-function renderMsHistory() {
-  const container = document.getElementById('msHistoryLines');
-  if (!msHistoryLog.length) {
-    container.innerHTML = '<div style="color:var(--muted);font-style:italic;font-size:0.9rem">No problems answered yet — complete a challenge to record your first entry!</div>';
-    return;
-  }
-  container.innerHTML = msHistoryLog.map((e, i) => `
-    <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);${i === 0 ? 'border-top:1px solid rgba(255,255,255,0.05)' : ''}">
-      <div style="flex-shrink:0;width:32px;height:32px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:900;color:var(--bg);font-family:'Cinzel',serif">${e.parts}</div>
-      <div style="flex:1;min-width:0">
-        <div style="font-family:'Space Mono',monospace;font-size:0.82rem;color:var(--green);font-weight:700">✓ ${e.parts}-part problem completed</div>
-        <div style="font-size:0.78rem;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.text}</div>
-      </div>
-      <div style="flex-shrink:0;font-size:0.72rem;color:var(--muted);font-family:'Space Mono',monospace;padding-top:2px">${e.time}</div>
-    </div>
-  `).join('');
-}
-
-function clearMsHistory() {
-  msHistoryLog.length = 0;
-  renderMsHistory();
-}
-
-// =============================================
-// ADVANCED HISTORY LOG
-// =============================================
-const advHistoryLog = [];
-
-function addToAdvHistory(p) {
-  const entry = {
-    text: p.text.replace(/<[^>]+>/g, '').substring(0, 65) + '…',
-    vars: p.vars.map(v => v.sym).join(', '),
-    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-  };
-  advHistoryLog.unshift(entry);
-  renderAdvHistory();
-}
-
-function renderAdvHistory() {
-  const container = document.getElementById('advHistoryLines');
-  if (!advHistoryLog.length) {
-    container.innerHTML = '<div style="color:var(--muted);font-style:italic;font-size:0.9rem">No problems answered yet — complete a challenge to record your first entry!</div>';
-    return;
-  }
-  container.innerHTML = advHistoryLog.map((e, i) => `
-    <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);${i === 0 ? 'border-top:1px solid rgba(255,255,255,0.05)' : ''}">
-      <div style="flex-shrink:0;width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:900;color:var(--bg);font-family:'Cinzel',serif">${e.vars}</div>
-      <div style="flex:1;min-width:0">
-        <div style="font-family:'Space Mono',monospace;font-size:0.82rem;color:var(--green);font-weight:700">✓ System solved</div>
-        <div style="font-size:0.78rem;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.text}</div>
-      </div>
-      <div style="flex-shrink:0;font-size:0.72rem;color:var(--muted);font-family:'Space Mono',monospace;padding-top:2px">${e.time}</div>
-    </div>
-  `).join('');
-}
-
-function clearAdvHistory() {
-  advHistoryLog.length = 0;
-  renderAdvHistory();
-}
-
 function msShowSuccess() {
-  const p = msShuffle[msIndex];
-  addToMsHistory(p);
   const container = document.getElementById('msPartsContainer');
   const div = document.createElement('div');
   div.className = 'success-banner';
